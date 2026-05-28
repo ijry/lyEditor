@@ -2,7 +2,7 @@
   <div
     data-testid="ly-editor-root"
     data-ly-editor="true"
-    :data-locale="locale"
+    :data-locale="normalizedLocale"
     :data-has-messages="messages ? '1' : '0'"
   ></div>
 </template>
@@ -18,6 +18,11 @@ export default {
     messages: {
       type: Object,
       default: undefined
+    }
+  },
+  computed: {
+    normalizedLocale() {
+      return this.locale == null ? 'zh-CN' : this.locale
     }
   }
 }

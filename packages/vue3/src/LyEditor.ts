@@ -8,7 +8,7 @@ export const LyEditor = defineComponent({
       default: 'zh-CN'
     },
     messages: {
-      type: Object as PropType<Record<string, Record<string, string>>>,
+      type: Object as PropType<Record<string, Record<string, string>> | null>,
       default: undefined
     }
   },
@@ -17,7 +17,7 @@ export const LyEditor = defineComponent({
       h('div', {
         'data-testid': 'ly-editor-root',
         'data-ly-editor': true,
-        'data-locale': props.locale,
+        'data-locale': props.locale ?? 'zh-CN',
         'data-has-messages': props.messages ? '1' : '0'
       })
   }

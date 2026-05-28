@@ -1,8 +1,8 @@
 import React from 'react'
 
 export interface LyEditorProps {
-  locale?: string
-  messages?: Record<string, Record<string, string>>
+  locale?: string | null
+  messages?: Record<string, Record<string, string>> | null
 }
 
 export interface LyEditorRef {
