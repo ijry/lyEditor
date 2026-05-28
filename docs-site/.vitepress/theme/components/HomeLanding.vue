@@ -51,7 +51,7 @@ const isExternalLink = (href: string) => /^https?:\/\//.test(href)
         <h2>{{ content.demo.title }}</h2>
         <p>{{ content.demo.note }}</p>
       </div>
-      <HomeEditorDemo />
+      <HomeEditorDemo :initialLocale="normalizedLocale" />
     </section>
 
     <section class="landing-integrations">

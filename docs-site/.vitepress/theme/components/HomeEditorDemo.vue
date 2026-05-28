@@ -1,7 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
-const locale = ref<'zh-CN' | 'en-US'>('zh-CN')
+const props = withDefaults(
+  defineProps<{
+    initialLocale?: 'zh-CN' | 'en-US'
+  }>(),
+  {
+    initialLocale: 'zh-CN'
+  }
+)
+
+const locale = ref<'zh-CN' | 'en-US'>(props.initialLocale)
 const content = ref('Hello lyEditor')
 
 const labels = {
@@ -18,6 +27,13 @@ const labels = {
     underline: 'Underline'
   }
 } as const
+
+watch(
+  () => props.initialLocale,
+  (nextLocale) => {
+    locale.value = nextLocale
+  }
+)
 </script>
 
 <template>
