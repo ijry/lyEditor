@@ -10,8 +10,8 @@ public Map<String, Object> sign(@RequestBody SignRequest request) {
 }
 ```
 
-## 调试建议
+## Troubleshooting
 
-- 检查时区与时间戳
-- 对请求体做参数校验
-- 日志脱敏后再输出
+- check timezone consistency
+- validate request body fields
+- avoid logging sensitive credentials

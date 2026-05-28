@@ -1,22 +1,16 @@
-# 上传集成
+# Upload Integration
 
 `POST /api/editor/upload/sign`
 
-## 请求字段
+## Request Fields
 
 - `provider`
 - `filename`
 - `contentType`
 - `size`
 
-## 响应字段
+## Response Fields
 
 - OSS: `accessId`, `policy`, `signature`, `dir`, `host`, `expire`
 - COS: `tmpSecretId`, `tmpSecretKey`, `sessionToken`, `startTime`, `expiredTime`, `bucket`, `region`, `key`
-- 七牛: `uploadToken`, `key`, `domain`, `expire`
-
-## 接入建议
-
-- 签名有效期尽量短。
-- 对上传目录做租户隔离。
-- 服务端做类型和大小白名单校验。
+- Qiniu: `uploadToken`, `key`, `domain`, `expire`

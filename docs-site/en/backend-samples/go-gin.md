@@ -8,8 +8,8 @@ router.POST("/api/editor/upload/sign", func(c *gin.Context) {
 })
 ```
 
-## 调试建议
+## Troubleshooting
 
-- 限制 body 大小
-- 明确错误码与错误信息结构
-- 结合 tracing 定位链路问题
+- limit request body size
+- return explicit error codes
+- add tracing for upload link debugging

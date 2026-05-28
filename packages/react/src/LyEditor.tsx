@@ -1,5 +1,10 @@
 import React from 'react'
 
+export interface LyEditorProps {
+  locale?: string
+  messages?: Record<string, Record<string, string>> | null
+}
+
 export interface LyEditorRef {
   getEditor: () => unknown
   exec: (command?: string, payload?: unknown) => void
@@ -8,6 +13,11 @@ export interface LyEditorRef {
   destroy: () => void
 }
 
-export function LyEditor() {
-  return React.createElement('div', { 'data-ly-editor': true })
+export function LyEditor(props: LyEditorProps) {
+  return React.createElement('div', {
+    'data-testid': 'ly-editor-root',
+    'data-ly-editor': true,
+    'data-locale': props.locale ?? 'zh-CN',
+    'data-has-messages': props.messages ? '1' : '0'
+  })
 }

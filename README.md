@@ -19,3 +19,28 @@ Next-generation rich text editor monorepo.
 pnpm install
 pnpm -r build
 ```
+
+## I18n
+
+- Editor wrappers accept `locale` and `messages` props.
+- Built-in locales: `zh-CN`, `en-US`.
+- Docs site routes: Chinese `/`, English `/en/`.
+
+## Documentation
+
+### Local Docs Development
+
+```bash
+pnpm --filter docs-site docs:dev
+```
+
+### Local Docs Build
+
+```bash
+pnpm --filter docs-site docs:build
+```
+
+### Docs Publishing
+
+- Docs are automatically deployed to GitHub Pages by `.github/workflows/deploy-docs.yml` on push to `main`.
+- Repository setting must enable `Settings -> Pages -> Build and deployment -> Source: GitHub Actions`.

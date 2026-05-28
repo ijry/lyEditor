@@ -1,28 +1,23 @@
-# 快速开始
+# Getting Started
 
-## 安装
+## Install
 
 ```bash
 pnpm install
 ```
 
-## 本地开发文档
+## Run Docs Locally
 
 ```bash
 pnpm --filter docs-site docs:dev
 ```
 
-## 最小初始化
+## Minimal Setup
 
 ```ts
 import { createEditorCore } from '@ly-editor/core'
 import { createPluginRegistry } from '@ly-editor/plugin-kit'
 
 const editor = createEditorCore({ initialText: 'Hello lyEditor' })
-const plugins = createPluginRegistry({ locale: 'zh-CN' })
+const plugins = createPluginRegistry({ locale: 'en-US' })
 ```
-
-## 下一步
-
-- 阅读 [核心概念](/guide/core-concepts)
-- 查看 [编辑器 API](/guide/editor-api)
