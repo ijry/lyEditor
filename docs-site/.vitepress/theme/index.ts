@@ -1,13 +1,14 @@
-import DefaultTheme from 'vitepress/theme'
+import { h } from 'vue'
 import type { Theme } from 'vitepress'
-import HomeEditorDemo from './components/HomeEditorDemo.vue'
-import HomeLanding from './components/HomeLanding.vue'
-import './home.css'
+import DefaultTheme from 'vitepress/theme'
+import HomePage from './HomePage.vue'
+import './style.css'
 
 export default {
   extends: DefaultTheme,
-  enhanceApp({ app }) {
-    app.component('HomeEditorDemo', HomeEditorDemo)
-    app.component('HomeLanding', HomeLanding)
+  Layout() {
+    return h(DefaultTheme.Layout, null, {
+      'home-features-after': () => h(HomePage)
+    })
   }
 } satisfies Theme
