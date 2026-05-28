@@ -2,6 +2,8 @@
 
 lyEditor 是一个面向扩展场景的新一代富文本编辑器，内核基于 `slate`，视图层基于 `snabbdom`，并通过插件体系组织功能。
 
+<HomeEditorDemo />
+
 ## 学习路径
 
 - [快速开始](/guide/getting-started)

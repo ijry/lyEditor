@@ -2,6 +2,8 @@
 
 lyEditor is a next-generation rich text editor with plugin architecture, table support, multi-framework wrappers, and upload integrations.
 
+<HomeEditorDemo />
+
 ## Learning Path
 
 - [Getting Started](/en/guide/getting-started)
