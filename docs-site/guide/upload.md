@@ -1,14 +1,14 @@
-# Upload Guide
+# 上传指南
 
 `POST /api/editor/upload/sign`
 
-Request fields:
+请求字段：
 - `provider`
 - `filename`
 - `contentType`
 - `size`
 
-Response fields:
-- OSS: `accessId`, `policy`, `signature`, `dir`, `host`, `expire`
-- COS: `tmpSecretId`, `tmpSecretKey`, `sessionToken`, `startTime`, `expiredTime`, `bucket`, `region`, `key`
-- Qiniu: `uploadToken`, `key`, `domain`, `expire`
+响应字段：
+- OSS：`accessId`、`policy`、`signature`、`dir`、`host`、`expire`
+- COS：`tmpSecretId`、`tmpSecretKey`、`sessionToken`、`startTime`、`expiredTime`、`bucket`、`region`、`key`
+- 七牛：`uploadToken`、`key`、`domain`、`expire`

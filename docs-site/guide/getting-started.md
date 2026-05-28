@@ -1,12 +1,12 @@
-# Getting Started
+# 快速开始
 
-## Install
+## 安装
 
 ```bash
 pnpm install
 ```
 
-## Build
+## 构建
 
 ```bash
 pnpm build

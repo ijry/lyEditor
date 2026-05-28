@@ -1,4 +1,4 @@
-# Java (Spring Boot)
+# Java（Spring Boot）
 
 ```java
 @PostMapping("/api/editor/upload/sign")

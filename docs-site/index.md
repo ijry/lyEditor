@@ -1,6 +1,6 @@
-# lyEditor Docs
+# lyEditor 文档
 
-Welcome to lyEditor documentation.
+欢迎使用 lyEditor 文档。
 
-- [Getting Started](/guide/getting-started)
-- [Upload Guide](/guide/upload)
+- [快速开始](/guide/getting-started)
+- [上传指南](/guide/upload)

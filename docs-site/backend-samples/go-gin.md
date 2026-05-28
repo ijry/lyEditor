@@ -1,4 +1,4 @@
-# Go (Gin)
+# Go（Gin）
 
 ```go
 router.POST("/api/editor/upload/sign", func(c *gin.Context) {

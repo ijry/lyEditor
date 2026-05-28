@@ -2,6 +2,54 @@ import { describe, expect, it } from 'vitest'
 import { createPluginRegistry } from '../create-plugin-registry'
 
 describe('plugin registry', () => {
+  it('allows input messages to override plugin i18n title keys', () => {
+    const registry = createPluginRegistry({
+      locale: 'zh-CN',
+      messages: {
+        'zh-CN': { 'toolbar.bold': '自定义加粗' },
+        'en-US': { 'toolbar.bold': 'Custom Bold' }
+      }
+    })
+    registry.register({
+      id: 'bold',
+      i18n: {
+        'zh-CN': { 'toolbar.bold': '加粗' },
+        'en-US': { 'toolbar.bold': 'Bold' }
+      },
+      toolbar: [{ key: 'bold', group: 'inline', titleKey: 'toolbar.bold' }]
+    })
+
+    expect(registry.getToolbar()[0].title).toBe('自定义加粗')
+    registry.setLocale('en-US')
+    expect(registry.getToolbar()[0].title).toBe('Custom Bold')
+  })
+
+  it('allows setMessages to override plugin i18n and can restore fallback behavior', () => {
+    const registry = createPluginRegistry({ locale: 'zh-CN' })
+    registry.register({
+      id: 'bold',
+      i18n: {
+        'zh-CN': { 'toolbar.bold': '加粗' },
+        'en-US': { 'toolbar.bold': 'Bold' }
+      },
+      toolbar: [{ key: 'bold', group: 'inline', titleKey: 'toolbar.bold' }]
+    })
+
+    expect(registry.getToolbar()[0].title).toBe('加粗')
+
+    registry.setMessages({
+      'zh-CN': { 'toolbar.bold': '外部覆盖' },
+      'en-US': { 'toolbar.bold': 'Strong' }
+    })
+    expect(registry.getToolbar()[0].title).toBe('外部覆盖')
+
+    registry.setLocale('en-US')
+    expect(registry.getToolbar()[0].title).toBe('Strong')
+
+    registry.setMessages(undefined)
+    expect(registry.getToolbar()[0].title).toBe('Bold')
+  })
+
   it('resolves toolbar title from titleKey and plugin i18n messages', () => {
     const registry = createPluginRegistry({ locale: 'zh-CN' })
     registry.register({
