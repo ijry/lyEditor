@@ -6,3 +6,9 @@ app.post('/api/editor/upload/sign', async (req, res) => {
   res.json({ provider, filename, contentType, size })
 })
 ```
+
+## Troubleshooting
+
+- validate CORS
+- validate server clock
+- validate object storage permissions
