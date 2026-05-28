@@ -7,9 +7,12 @@
     "build": "pnpm -r --if-present build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "pnpm -r --if-present lint"
+    "lint": "pnpm -r --if-present lint",
+    "e2e": "playwright test"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.0",
+    "@playwright/test": "^1.55.0",
     "jsdom": "^29.1.1",
     "typescript": "^5.8.0",
     "vitest": "^2.1.0"
