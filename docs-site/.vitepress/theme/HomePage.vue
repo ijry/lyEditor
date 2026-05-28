@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useData } from 'vitepress'
+import HomeEditorDemo from './components/HomeEditorDemo.vue'
 
 const { site, lang, page } = useData()
 const base = computed(() => site.value.base || '/')
@@ -230,15 +231,8 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
         </div>
 
         <div class="hero-visual" :aria-label="content.heroVisualAria">
-          <div class="browser-frame">
-            <div class="browser-bar">
-              <span></span><span></span><span></span>
-              <em>{{ content.heroVisualTag }}</em>
-            </div>
-            <img :src="`${base}showcase/web-home.png`" :alt="content.heroVisualDesktopAlt" />
-          </div>
-          <div class="phone-frame">
-            <img :src="`${base}showcase/h5-home.png`" :alt="content.heroVisualMobileAlt" />
+          <div class="hero-demo-shell">
+            <HomeEditorDemo :initialLocale="isEn ? 'en-US' : 'zh-CN'" />
           </div>
         </div>
       </div>
@@ -254,19 +248,33 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
       </div>
     </section>
 
-    <section class="section showcase-section">
-      <div class="container">
-        <div class="showcase-grid">
-          <article v-for="item in content.showcase" :key="item.title" class="showcase-card">
-            <div class="phone-shot">
-              <img :src="`${base}showcase/${item.image}`" :alt="`${item.title}截图`" />
+    <section class="section preview-section">
+      <div class="container preview-layout">
+        <div class="preview-media">
+          <div class="preview-map">
+            <div class="map-row">
+              <span v-for="item in content.architectureTopRow" :key="`p-top-${item}`">{{ item }}</span>
             </div>
-            <div class="showcase-copy">
-              <h3>{{ item.title }}</h3>
-              <p>{{ item.desc }}</p>
+            <div class="map-core">
+              <strong>{{ content.architectureCoreTitle }}</strong>
+              <div>
+                <span v-for="item in content.architectureCoreTags" :key="`p-core-${item}`">{{ item }}</span>
+              </div>
             </div>
-          </article>
+            <div class="map-row">
+              <span v-for="item in content.architectureBottomRow" :key="`p-bottom-${item}`">{{ item }}</span>
+            </div>
+          </div>
         </div>
+        <aside class="preview-panel">
+          <h3>{{ content.capabilityTitle }}</h3>
+          <ul class="feature-list">
+            <li v-for="item in content.capabilities.slice(0, 4)" :key="`preview-${item.title}`">
+              <strong>{{ item.title }}</strong>
+              <p>{{ item.desc }}</p>
+            </li>
+          </ul>
+        </aside>
       </div>
     </section>
 
@@ -277,28 +285,14 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
           <h2>{{ content.merchantTitle }}</h2>
           <p>{{ content.merchantLead }}</p>
         </div>
-        <div class="merchant-layout">
-          <div class="merchant-shot-grid">
-            <article v-for="item in content.merchantAppShots" :key="item.title" class="merchant-shot-card">
-              <div class="phone-shot">
-                <img :src="`${base}showcase/${item.image}`" :alt="`${item.title}截图`" />
-              </div>
-              <div class="showcase-copy">
-                <h3>{{ item.title }}</h3>
-                <p>{{ item.desc }}</p>
-              </div>
-            </article>
-          </div>
-          <aside class="merchant-feature-panel">
-            <h3>{{ content.merchantPanelTitle }}</h3>
-            <ul class="feature-list">
-              <li v-for="item in content.merchantFunctions" :key="item.title">
-                <strong>{{ item.title }}</strong>
-                <p>{{ item.desc }}</p>
-              </li>
-            </ul>
-            <a class="btn primary" :href="`${base}${content.merchantDocHref}`">{{ content.merchantDocText }}</a>
-          </aside>
+        <div class="marketing-feature-grid compact-grid">
+          <article v-for="item in content.merchantFunctions" :key="item.title" class="capability-card">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.desc }}</p>
+          </article>
+        </div>
+        <div class="section-action">
+          <a class="btn primary" :href="`${base}${content.merchantDocHref}`">{{ content.merchantDocText }}</a>
         </div>
       </div>
     </section>
@@ -310,18 +304,7 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
           <h2>{{ content.marketingTitle }}</h2>
           <p>{{ content.marketingLead }}</p>
         </div>
-        <div class="marketing-shot-grid">
-          <article v-for="item in content.marketingAppShots" :key="item.title" class="marketing-shot-card">
-            <div class="phone-shot">
-              <img :src="`${base}showcase/${item.image}`" :alt="`${item.title}截图`" />
-            </div>
-            <div class="showcase-copy">
-              <h3>{{ item.title }}</h3>
-              <p>{{ item.desc }}</p>
-            </div>
-          </article>
-        </div>
-        <div class="marketing-feature-grid">
+        <div class="marketing-feature-grid compact-grid">
           <article v-for="item in content.marketingFunctions" :key="item.title" class="capability-card">
             <h3>{{ item.title }}</h3>
             <p>{{ item.desc }}</p>
@@ -551,7 +534,41 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 
 .hero-visual {
   position: relative;
-  min-height: 520px;
+  min-height: 430px;
+}
+
+.hero-demo-shell {
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.56);
+  box-shadow: 0 20px 50px rgba(2, 6, 23, 0.35);
+  backdrop-filter: blur(3px);
+}
+
+.hero-demo-shell :deep(.home-editor-demo) {
+  margin: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  padding: 18px;
+}
+
+.hero-demo-shell :deep(.demo-header strong) {
+  color: #e2e8f0;
+}
+
+.hero-demo-shell :deep(.locale-switch button),
+.hero-demo-shell :deep(.toolbar button) {
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.58);
+  color: #e2e8f0;
+}
+
+.hero-demo-shell :deep(.editor) {
+  border-color: rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.96);
+  color: #0f172a;
 }
 
 .browser-frame,
@@ -658,6 +675,39 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 
 .intro-band {
   background: #fff;
+}
+
+.preview-section {
+  padding-top: 24px;
+  background: #fff;
+}
+
+.preview-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.preview-map {
+  padding: 24px;
+  border: 1px solid var(--ly-line);
+  border-radius: 14px;
+  background: var(--ly-panel);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+
+.preview-panel {
+  border: 1px solid var(--ly-line);
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 22px;
+}
+
+.preview-panel h3 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.4;
 }
 
 .showcase-section {
@@ -785,6 +835,14 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
+}
+
+.compact-grid {
+  margin-top: 0;
+}
+
+.section-action {
+  margin-top: 20px;
 }
 
 .capability-section,
@@ -935,12 +993,13 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 
 @media (max-width: 1040px) {
   .hero-inner,
-  .architecture-layout {
+  .architecture-layout,
+  .preview-layout {
     grid-template-columns: 1fr;
   }
 
   .hero-visual {
-    min-height: 430px;
+    min-height: auto;
   }
 
   .showcase-grid,
@@ -998,10 +1057,6 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   .hero-visual {
     min-height: auto;
     padding-bottom: 0;
-  }
-
-  .phone-frame {
-    display: none;
   }
 
   .showcase-card {
