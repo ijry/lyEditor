@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  base: '/lyEditor/',
   locales: {
     root: {
       label: '中文',
