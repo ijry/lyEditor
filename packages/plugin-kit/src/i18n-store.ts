@@ -13,8 +13,10 @@ export function createI18nStore(input?: {
   messages?: I18nMessageMap
 }): I18nStore {
   let locale = input?.locale ?? 'zh-CN'
-  const messages: I18nMessageMap = {
-    ...(input?.messages ?? {})
+  const messages: I18nMessageMap = {}
+
+  for (const [messageLocale, localeMessages] of Object.entries(input?.messages ?? {})) {
+    messages[messageLocale] = { ...localeMessages }
   }
 
   return {
@@ -35,10 +37,10 @@ export function createI18nStore(input?: {
       if (!params) {
         return text
       }
-      return Object.entries(params).reduce(
-        (acc, [name, value]) => acc.replace(new RegExp(`\\{${name}\\}`, 'g'), String(value)),
-        text
-      )
+      return Object.entries(params).reduce((acc, [name, value]) => {
+        const token = `{${name}}`
+        return acc.split(token).join(String(value))
+      }, text)
     }
   }
 }

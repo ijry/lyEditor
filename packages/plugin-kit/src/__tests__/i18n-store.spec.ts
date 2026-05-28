@@ -23,4 +23,37 @@ describe('i18n store', () => {
     store.mergeMessages('zh-CN', { 'toolbar.bold': '粗体' })
     expect(store.t('toolbar.bold')).toBe('粗体')
   })
+
+  it('interpolates params safely with literal replacement', () => {
+    const store = createI18nStore({
+      locale: 'en-US',
+      messages: {
+        'en-US': {
+          'toolbar.label': 'Hello {na.me} {name} {name} {price}'
+        }
+      }
+    })
+
+    expect(
+      store.t('toolbar.label', {
+        'na.me': 'A',
+        name: '$1',
+        price: '$&'
+      })
+    ).toBe('Hello A $1 $1 $&')
+  })
+
+  it('isolates initial messages from external mutations', () => {
+    const inputMessages = {
+      'en-US': { 'toolbar.bold': 'Bold' }
+    }
+
+    const store = createI18nStore({
+      locale: 'en-US',
+      messages: inputMessages
+    })
+
+    inputMessages['en-US']['toolbar.bold'] = 'Changed'
+    expect(store.t('toolbar.bold')).toBe('Bold')
+  })
 })
