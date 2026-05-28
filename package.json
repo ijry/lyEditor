@@ -10,6 +10,7 @@
     "lint": "pnpm -r --if-present lint"
   },
   "devDependencies": {
+    "jsdom": "^29.1.1",
     "typescript": "^5.8.0",
     "vitest": "^2.1.0"
   }
