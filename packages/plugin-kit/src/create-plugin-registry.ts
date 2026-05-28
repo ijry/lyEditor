@@ -33,11 +33,16 @@ export function createPluginRegistry(input?: {
     }
   }
 
-  function resolveExternalTitle(item: ToolbarItem): string | undefined {
-    if (!item.titleKey) {
+  function resolveExternalTitle(
+    pluginId: string,
+    titleKey: string,
+    targetLocale: string
+  ): string | undefined {
+    const localeMessages = externalMessages[targetLocale]
+    if (!localeMessages) {
       return undefined
     }
-    return externalMessages[locale]?.[item.titleKey] ?? externalMessages['en-US']?.[item.titleKey]
+    return localeMessages[`${pluginId}.${titleKey}`] ?? localeMessages[titleKey]
   }
 
   function resolveToolbarTitle(plugin: EditorPlugin, item: ToolbarItem): string {
@@ -45,17 +50,25 @@ export function createPluginRegistry(input?: {
       return item.title ?? item.key
     }
 
-    const externalTitle = resolveExternalTitle(item)
-    if (externalTitle !== undefined) {
-      return externalTitle
+    const externalCurrentLocale = resolveExternalTitle(plugin.id, item.titleKey, locale)
+    if (externalCurrentLocale !== undefined) {
+      return externalCurrentLocale
     }
 
-    const translated =
-      plugin.i18n?.[locale]?.[item.titleKey] ??
-      plugin.i18n?.['en-US']?.[item.titleKey]
+    const pluginCurrentLocale = plugin.i18n?.[locale]?.[item.titleKey]
+    if (pluginCurrentLocale !== undefined) {
+      return pluginCurrentLocale
+    }
 
-    if (translated !== undefined) {
-      return translated
+    const externalEnUs = resolveExternalTitle(plugin.id, item.titleKey, 'en-US')
+    if (externalEnUs !== undefined) {
+      return externalEnUs
+    }
+
+    const pluginEnUs = plugin.i18n?.['en-US']?.[item.titleKey]
+
+    if (pluginEnUs !== undefined) {
+      return pluginEnUs
     }
 
     return item.title ?? item.titleKey

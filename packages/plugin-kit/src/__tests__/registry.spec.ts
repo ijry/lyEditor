@@ -50,6 +50,52 @@ describe('plugin registry', () => {
     expect(registry.getToolbar()[0].title).toBe('Bold')
   })
 
+  it('keeps plugin current-locale title when external map only provides en-US', () => {
+    const registry = createPluginRegistry({
+      locale: 'zh-CN',
+      messages: {
+        'en-US': { 'toolbar.bold': 'Custom Bold' }
+      }
+    })
+    registry.register({
+      id: 'bold',
+      i18n: {
+        'zh-CN': { 'toolbar.bold': '加粗' },
+        'en-US': { 'toolbar.bold': 'Bold' }
+      },
+      toolbar: [{ key: 'bold', group: 'inline', titleKey: 'toolbar.bold' }]
+    })
+
+    expect(registry.getToolbar()[0].title).toBe('加粗')
+  })
+
+  it('supports plugin-scoped external override for colliding title keys', () => {
+    const registry = createPluginRegistry({
+      locale: 'zh-CN',
+      messages: {
+        'zh-CN': { 'plugin-a.toolbar.shared': '甲外部覆盖' }
+      }
+    })
+    registry.register({
+      id: 'plugin-a',
+      i18n: {
+        'zh-CN': { 'toolbar.shared': '甲' }
+      },
+      toolbar: [{ key: 'a', group: 'inline', titleKey: 'toolbar.shared' }]
+    })
+    registry.register({
+      id: 'plugin-b',
+      i18n: {
+        'zh-CN': { 'toolbar.shared': '乙' }
+      },
+      toolbar: [{ key: 'b', group: 'inline', titleKey: 'toolbar.shared' }]
+    })
+
+    const toolbar = registry.getToolbar()
+    expect(toolbar[0].title).toBe('甲外部覆盖')
+    expect(toolbar[1].title).toBe('乙')
+  })
+
   it('resolves toolbar title from titleKey and plugin i18n messages', () => {
     const registry = createPluginRegistry({ locale: 'zh-CN' })
     registry.register({
