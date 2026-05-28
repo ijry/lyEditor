@@ -1,0 +1,221 @@
+:root {
+  --landing-primary: #0f2742;
+  --landing-accent: #00a3a3;
+  --landing-success: #22c55e;
+  --landing-bg: #f4f7fb;
+  --landing-card-bg: #ffffff;
+  --landing-text: #111827;
+  --landing-text-secondary: #4b5563;
+  --landing-border: #d7e0ea;
+  --landing-shadow: 0 10px 30px rgba(15, 39, 66, 0.08);
+  --landing-radius: 16px;
+}
+
+.landing-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  color: var(--landing-text);
+  font-family: 'Noto Sans SC', 'Manrope', 'Inter', sans-serif;
+}
+
+.landing-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--landing-border);
+  border-radius: 24px;
+  padding: 32px 28px;
+  background:
+    radial-gradient(circle at right top, rgba(0, 163, 163, 0.18), transparent 45%),
+    linear-gradient(135deg, rgba(15, 39, 66, 0.96), rgba(18, 57, 94, 0.95));
+  color: #f8fbff;
+  box-shadow: var(--landing-shadow);
+}
+
+.landing-eyebrow {
+  margin: 0 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.landing-title {
+  margin: 0 0 12px;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.14;
+  font-weight: 800;
+}
+
+.landing-subtitle {
+  margin: 0;
+  max-width: 820px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.landing-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.landing-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.landing-btn:hover {
+  transform: translateY(-1px);
+}
+
+.landing-btn-primary {
+  background: #ffffff;
+  color: var(--landing-primary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.landing-btn-secondary {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.75);
+  color: #ffffff;
+}
+
+.landing-section-head h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.2;
+}
+
+.landing-section-head p {
+  margin: 10px 0 0;
+  color: var(--landing-text-secondary);
+  line-height: 1.8;
+}
+
+.landing-demo,
+.landing-integrations,
+.landing-comparison,
+.landing-capabilities {
+  border: 1px solid var(--landing-border);
+  border-radius: var(--landing-radius);
+  padding: 22px;
+  background: var(--landing-card-bg);
+  box-shadow: var(--landing-shadow);
+}
+
+.landing-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.landing-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.landing-card {
+  border: 1px solid var(--landing-border);
+  border-radius: 14px;
+  padding: 16px;
+  background: linear-gradient(180deg, #ffffff, #f7fbff);
+}
+
+.landing-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.landing-card p {
+  margin: 0;
+  color: var(--landing-text-secondary);
+  line-height: 1.7;
+}
+
+.landing-card-link {
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.landing-card-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 163, 163, 0.45);
+  box-shadow: 0 8px 20px rgba(0, 163, 163, 0.16);
+}
+
+.landing-comparison-table {
+  margin-top: 18px;
+  border: 1px solid var(--landing-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.landing-comparison-row {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr 1.1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 14px 16px;
+  border-top: 1px solid var(--landing-border);
+  background: #ffffff;
+}
+
+.landing-comparison-row:first-child {
+  border-top: 0;
+}
+
+.landing-comparison-header {
+  background: #edf3fa;
+}
+
+.landing-negative {
+  color: #9ca3af;
+}
+
+.landing-positive {
+  color: #0c6a57;
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .landing-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .landing-comparison-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-page {
+    gap: 20px;
+  }
+
+  .landing-hero {
+    padding: 24px 18px;
+  }
+
+  .landing-cta {
+    flex-direction: column;
+  }
+
+  .landing-btn {
+    width: 100%;
+  }
+
+  .landing-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
