@@ -19,3 +19,9 @@ Next-generation rich text editor monorepo.
 pnpm install
 pnpm -r build
 ```
+
+## I18n
+
+- Editor wrappers accept `locale` and `messages` props.
+- Built-in locales: `zh-CN`, `en-US`.
+- Docs site routes: Chinese `/`, English `/en/`.
