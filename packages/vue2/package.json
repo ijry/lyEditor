@@ -1,0 +1,12 @@
+{
+  "name": "@ly-editor/vue2",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "vue": "^2.7.16"
+  }
+}
