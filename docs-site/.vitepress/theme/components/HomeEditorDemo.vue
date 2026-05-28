@@ -28,6 +28,8 @@ const labels = {
   }
 } as const
 
+const toolbarKeys = ['bold', 'italic', 'underline'] as const
+
 watch(
   () => props.initialLocale,
   (nextLocale) => {
@@ -47,9 +49,28 @@ watch(
     </header>
 
     <div class="toolbar">
-      <button type="button">{{ labels[locale].bold }}</button>
-      <button type="button">{{ labels[locale].italic }}</button>
-      <button type="button">{{ labels[locale].underline }}</button>
+      <button
+        v-for="key in toolbarKeys"
+        :key="key"
+        type="button"
+        class="toolbar-btn"
+        :title="labels[locale][key]"
+        :aria-label="labels[locale][key]"
+      >
+        <svg v-if="key === 'bold'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 5h7a4 4 0 0 1 0 8H7z" />
+          <path d="M7 13h8a4 4 0 0 1 0 8H7z" />
+        </svg>
+        <svg v-else-if="key === 'italic'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="14" y1="4" x2="10" y2="20" />
+          <line x1="8" y1="4" x2="16" y2="4" />
+          <line x1="8" y1="20" x2="16" y2="20" />
+        </svg>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 4v7a5 5 0 0 0 10 0V4" />
+          <line x1="4" y1="20" x2="20" y2="20" />
+        </svg>
+      </button>
     </div>
 
     <div
@@ -85,6 +106,29 @@ watch(
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.toolbar-btn {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  cursor: pointer;
+}
+
+.toolbar-btn:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
+.toolbar-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .editor {
