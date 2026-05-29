@@ -19,6 +19,8 @@ const contentHtml = ref('')
 const savedRange = ref<Range | null>(null)
 const tablePickerWrapRef = ref<HTMLDivElement | null>(null)
 const styleMenuWrapRef = ref<HTMLDivElement | null>(null)
+const fontSizeMenuWrapRef = ref<HTMLDivElement | null>(null)
+const colorMenuWrapRef = ref<HTMLDivElement | null>(null)
 const paragraphMenuWrapRef = ref<HTMLDivElement | null>(null)
 const insertMenuWrapRef = ref<HTMLDivElement | null>(null)
 const tableOpsMenuWrapRef = ref<HTMLDivElement | null>(null)
@@ -32,6 +34,8 @@ const labels = {
     textColor: '文字色',
     highlightColor: '高亮色',
     styleMenu: '文本样式',
+    sizeMenu: '字号',
+    colorMenu: '颜色',
     paragraphMenu: '段落与对齐',
     insertMenu: '插入项',
     bold: '加粗',
@@ -85,6 +89,8 @@ const labels = {
     textColor: 'Text',
     highlightColor: 'Highlight',
     styleMenu: 'Text Style',
+    sizeMenu: 'Font Size',
+    colorMenu: 'Colors',
     paragraphMenu: 'Paragraph & Align',
     insertMenu: 'Insert',
     bold: 'Bold',
@@ -191,6 +197,8 @@ const selectedTextColor = ref<string>('#111827')
 const selectedHighlightColor = ref<string>('#fff59d')
 const tablePickerOpen = ref(false)
 const styleMenuOpen = ref(false)
+const fontSizeMenuOpen = ref(false)
+const colorMenuOpen = ref(false)
 const paragraphMenuOpen = ref(false)
 const insertMenuOpen = ref(false)
 const tableOpsMenuOpen = ref(false)
@@ -413,6 +421,8 @@ function applyBlock(block: string) {
 
 function closeMenus() {
   styleMenuOpen.value = false
+  fontSizeMenuOpen.value = false
+  colorMenuOpen.value = false
   paragraphMenuOpen.value = false
   insertMenuOpen.value = false
   tableOpsMenuOpen.value = false
@@ -430,6 +440,20 @@ function toggleParagraphMenu() {
   const next = !paragraphMenuOpen.value
   closeMenus()
   paragraphMenuOpen.value = next
+  cacheSelection()
+}
+
+function toggleFontSizeMenu() {
+  const next = !fontSizeMenuOpen.value
+  closeMenus()
+  fontSizeMenuOpen.value = next
+  cacheSelection()
+}
+
+function toggleColorMenu() {
+  const next = !colorMenuOpen.value
+  closeMenus()
+  colorMenuOpen.value = next
   cacheSelection()
 }
 
@@ -724,6 +748,12 @@ function handleDocumentMouseDown(event: MouseEvent) {
   if (styleMenuWrapRef.value && !styleMenuWrapRef.value.contains(target)) {
     styleMenuOpen.value = false
   }
+  if (fontSizeMenuWrapRef.value && !fontSizeMenuWrapRef.value.contains(target)) {
+    fontSizeMenuOpen.value = false
+  }
+  if (colorMenuWrapRef.value && !colorMenuWrapRef.value.contains(target)) {
+    colorMenuOpen.value = false
+  }
   if (paragraphMenuWrapRef.value && !paragraphMenuWrapRef.value.contains(target)) {
     paragraphMenuOpen.value = false
   }
@@ -867,22 +897,59 @@ watch(
             </div>
           </section>
 
-          <section class="toolbar-menu-group">
-            <header>{{ labels[locale].fontSize }}</header>
-            <div class="style-chip-list">
-              <button
-                v-for="item in fontSizeOptions"
-                :key="`font-size-${item.value}`"
-                type="button"
-                class="style-chip"
-                :class="{ active: selectedFontSize === item.value }"
-                @click="applyFontSizeValue(item.value)"
-              >
-                {{ item.label }}px
-              </button>
-            </div>
-          </section>
+          <button
+            type="button"
+            class="toolbar-menu-item"
+            :title="labels[locale].removeFormat"
+            :aria-label="labels[locale].removeFormat"
+            @click="runCommand('removeFormat'); styleMenuOpen = false"
+          >
+            <span class="toolbar-menu-item-icon"><EditorIcon name="clear" /></span>
+            <span>{{ labels[locale].removeFormat }}</span>
+          </button>
+        </div>
+      </div>
 
+      <div ref="fontSizeMenuWrapRef" class="toolbar-menu-wrap">
+        <button
+          type="button"
+          class="toolbar-btn toolbar-menu-trigger"
+          :title="labels[locale].sizeMenu"
+          :aria-label="labels[locale].sizeMenu"
+          @mousedown.prevent
+          @click="toggleFontSizeMenu"
+        >
+          <EditorIcon name="fontSize" />
+          <EditorIcon class="menu-caret" name="chevronDown" :size="13" />
+        </button>
+        <div v-if="fontSizeMenuOpen" class="toolbar-menu-panel compact-menu-panel" @mousedown.prevent>
+          <button
+            v-for="item in fontSizeOptions"
+            :key="`font-size-${item.value}`"
+            type="button"
+            class="toolbar-menu-item"
+            :class="{ active: selectedFontSize === item.value }"
+            @click="applyFontSizeValue(item.value); fontSizeMenuOpen = false"
+          >
+            <span class="toolbar-menu-item-icon"><EditorIcon name="fontSize" /></span>
+            <span>{{ item.label }}px</span>
+          </button>
+        </div>
+      </div>
+
+      <div ref="colorMenuWrapRef" class="toolbar-menu-wrap">
+        <button
+          type="button"
+          class="toolbar-btn toolbar-menu-trigger"
+          :title="labels[locale].colorMenu"
+          :aria-label="labels[locale].colorMenu"
+          @mousedown.prevent
+          @click="toggleColorMenu"
+        >
+          <EditorIcon name="textColor" />
+          <EditorIcon class="menu-caret" name="chevronDown" :size="13" />
+        </button>
+        <div v-if="colorMenuOpen" class="toolbar-menu-panel color-menu-panel" @mousedown.prevent>
           <section class="toolbar-menu-group style-color-grid">
             <label class="style-color-item">
               <span class="style-color-label">
@@ -899,17 +966,6 @@ watch(
               <input v-model="selectedHighlightColor" type="color" @input="applyHighlightColor" />
             </label>
           </section>
-
-          <button
-            type="button"
-            class="toolbar-menu-item"
-            :title="labels[locale].removeFormat"
-            :aria-label="labels[locale].removeFormat"
-            @click="runCommand('removeFormat'); styleMenuOpen = false"
-          >
-            <span class="toolbar-menu-item-icon"><EditorIcon name="clear" /></span>
-            <span>{{ labels[locale].removeFormat }}</span>
-          </button>
         </div>
       </div>
 
@@ -1151,10 +1207,19 @@ watch(
 }
 
 .style-menu-panel {
-  width: 296px;
-  min-width: 296px;
+  width: 248px;
+  min-width: 248px;
   display: grid;
   gap: 8px;
+}
+
+.compact-menu-panel {
+  min-width: 136px;
+}
+
+.color-menu-panel {
+  width: 224px;
+  min-width: 224px;
 }
 
 .toolbar-menu-group {
@@ -1352,6 +1417,11 @@ watch(
   .style-menu-panel {
     min-width: 260px;
     width: min(280px, calc(100vw - 52px));
+  }
+
+  .color-menu-panel {
+    min-width: 220px;
+    width: min(240px, calc(100vw - 52px));
   }
 
   .editor {
