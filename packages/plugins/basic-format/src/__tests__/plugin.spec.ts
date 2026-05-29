@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { basicFormatPlugin } from '../index'
 import { blockToolsPlugin } from '../../../block-tools/src'
 import { linkImagePlugin } from '../../../link-image/src'
+import { styleToolsPlugin } from '../../../style-tools/src'
 import { tablePlugin } from '../../../table/src'
 
 function expectToolbarI18nCoverage(
@@ -53,6 +54,17 @@ describe('plugins i18n migration coverage', () => {
   it('covers table titleKey and bilingual dictionaries for toolbar entries', () => {
     expectToolbarI18nCoverage(tablePlugin, [
       { key: 'table', titleKey: 'toolbar.table', zhCN: '表格', enUS: 'Table' }
+    ])
+  })
+
+  it('covers style-tools titleKey and bilingual dictionaries for toolbar entries', () => {
+    expectToolbarI18nCoverage(styleToolsPlugin, [
+      { key: 'font-family', titleKey: 'toolbar.fontFamily', zhCN: '字体', enUS: 'Font Family' },
+      { key: 'font-size', titleKey: 'toolbar.fontSize', zhCN: '字号', enUS: 'Font Size' },
+      { key: 'text-color', titleKey: 'toolbar.textColor', zhCN: '文字颜色', enUS: 'Text Color' },
+      { key: 'highlight-color', titleKey: 'toolbar.highlightColor', zhCN: '高亮颜色', enUS: 'Highlight Color' },
+      { key: 'strike', titleKey: 'toolbar.strike', zhCN: '删除线', enUS: 'Strike Through' },
+      { key: 'inline-code', titleKey: 'toolbar.inlineCode', zhCN: '行内代码', enUS: 'Inline Code' }
     ])
   })
 })

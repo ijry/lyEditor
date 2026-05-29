@@ -558,11 +558,23 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 }
 
 .hero-demo-shell :deep(.locale-switch button),
-.hero-demo-shell :deep(.toolbar button) {
+.hero-demo-shell :deep(.toolbar button),
+.hero-demo-shell :deep(.action-btn),
+.hero-demo-shell :deep(.toolbar-select),
+.hero-demo-shell :deep(.toolbar-color) {
   border: 1px solid rgba(148, 163, 184, 0.3);
   border-radius: 8px;
   background: rgba(15, 23, 42, 0.58);
   color: #e2e8f0;
+}
+
+.hero-demo-shell :deep(.toolbar-select select) {
+  color: #e2e8f0;
+}
+
+.hero-demo-shell :deep(.toolbar-select span),
+.hero-demo-shell :deep(.toolbar-color span) {
+  color: #cbd5e1;
 }
 
 .hero-demo-shell :deep(.editor) {
