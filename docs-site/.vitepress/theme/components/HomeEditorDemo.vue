@@ -11,7 +11,8 @@ const props = withDefaults(
 )
 
 const locale = ref<'zh-CN' | 'en-US'>(props.initialLocale)
-const content = ref('Hello lyEditor')
+const contentHtml = ref('<p>Hello lyEditor</p>')
+const editorRef = ref<HTMLDivElement | null>(null)
 
 const labels = {
   'zh-CN': {
@@ -29,6 +30,23 @@ const labels = {
 } as const
 
 const toolbarKeys = ['bold', 'italic', 'underline'] as const
+const commandMap = {
+  bold: 'bold',
+  italic: 'italic',
+  underline: 'underline'
+} as const
+
+function onInput() {
+  if (!editorRef.value) return
+  contentHtml.value = editorRef.value.innerHTML
+}
+
+function onToolbarClick(key: (typeof toolbarKeys)[number]) {
+  if (!editorRef.value) return
+  editorRef.value.focus()
+  document.execCommand(commandMap[key], false)
+  contentHtml.value = editorRef.value.innerHTML
+}
 
 watch(
   () => props.initialLocale,
@@ -56,6 +74,7 @@ watch(
         class="toolbar-btn"
         :title="labels[locale][key]"
         :aria-label="labels[locale][key]"
+        @click="onToolbarClick(key)"
       >
         <svg v-if="key === 'bold'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M7 5h7a4 4 0 0 1 0 8H7z" />
@@ -74,10 +93,12 @@ watch(
     </div>
 
     <div
+      ref="editorRef"
       class="editor"
       contenteditable="true"
-      @input="content = ($event.target as HTMLDivElement).innerText"
-    >{{ content }}</div>
+      @input="onInput"
+      v-html="contentHtml"
+    ></div>
   </section>
 </template>
 
