@@ -33,6 +33,7 @@ const labels = {
     fontSize: '字号',
     textColor: '文字色',
     highlightColor: '高亮色',
+    presetColors: '常用色',
     styleMenu: '文本样式',
     sizeMenu: '字号',
     colorMenu: '颜色',
@@ -88,6 +89,7 @@ const labels = {
     fontSize: 'Size',
     textColor: 'Text',
     highlightColor: 'Highlight',
+    presetColors: 'Presets',
     styleMenu: 'Text Style',
     sizeMenu: 'Font Size',
     colorMenu: 'Colors',
@@ -980,21 +982,6 @@ watch(
               </span>
               <input v-model="selectedTextColor" type="color" @input="applyTextColor" />
             </label>
-            <div class="color-presets">
-              <button
-                v-for="color in commonTextColors"
-                :key="`text-${color}`"
-                type="button"
-                class="color-swatch"
-                :class="{ active: selectedTextColor === color }"
-                :title="color"
-                :aria-label="color"
-                @mousedown.prevent
-                @click="applyTextColorValue(color)"
-              >
-                <span class="color-swatch-dot" :style="{ background: color }"></span>
-              </button>
-            </div>
             <label class="style-color-item">
               <span class="style-color-label">
                 <EditorIcon name="highlight" :size="14" />
@@ -1002,20 +989,45 @@ watch(
               </span>
               <input v-model="selectedHighlightColor" type="color" @input="applyHighlightColor" />
             </label>
-            <div class="color-presets">
-              <button
-                v-for="color in commonHighlightColors"
-                :key="`highlight-${color}`"
-                type="button"
-                class="color-swatch"
-                :class="{ active: selectedHighlightColor === color }"
-                :title="color"
-                :aria-label="color"
-                @mousedown.prevent
-                @click="applyHighlightColorValue(color)"
-              >
-                <span class="color-swatch-dot" :style="{ background: color }"></span>
-              </button>
+          </section>
+
+          <section class="toolbar-menu-group color-preset-section">
+            <header>{{ labels[locale].presetColors }}</header>
+            <div class="color-preset-row">
+              <span class="color-preset-label">{{ labels[locale].textColor }}</span>
+              <div class="color-presets">
+                <button
+                  v-for="color in commonTextColors"
+                  :key="`text-${color}`"
+                  type="button"
+                  class="color-swatch"
+                  :class="{ active: selectedTextColor === color }"
+                  :title="color"
+                  :aria-label="color"
+                  @mousedown.prevent
+                  @click="applyTextColorValue(color)"
+                >
+                  <span class="color-swatch-dot" :style="{ background: color }"></span>
+                </button>
+              </div>
+            </div>
+            <div class="color-preset-row">
+              <span class="color-preset-label">{{ labels[locale].highlightColor }}</span>
+              <div class="color-presets">
+                <button
+                  v-for="color in commonHighlightColors"
+                  :key="`highlight-${color}`"
+                  type="button"
+                  class="color-swatch"
+                  :class="{ active: selectedHighlightColor === color }"
+                  :title="color"
+                  :aria-label="color"
+                  @mousedown.prevent
+                  @click="applyHighlightColorValue(color)"
+                >
+                  <span class="color-swatch-dot" :style="{ background: color }"></span>
+                </button>
+              </div>
             </div>
           </section>
         </div>
@@ -1317,6 +1329,21 @@ watch(
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   gap: 5px;
+}
+
+.color-preset-section {
+  padding-top: 2px;
+  border-top: 1px dashed var(--vp-c-divider);
+}
+
+.color-preset-row {
+  display: grid;
+  gap: 6px;
+}
+
+.color-preset-label {
+  font-size: 11px;
+  color: var(--vp-c-text-2);
 }
 
 .color-swatch {

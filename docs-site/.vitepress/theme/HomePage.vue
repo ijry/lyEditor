@@ -622,6 +622,10 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   color: #d8f3e4;
 }
 
+.hero-demo-shell :deep(.color-preset-label) {
+  color: #c7e7d9;
+}
+
 .hero-demo-shell :deep(.color-swatch) {
   border-color: rgba(148, 196, 176, 0.34);
   background: rgba(7, 35, 26, 0.58);
