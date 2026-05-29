@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 type DemoLocale = 'zh-CN' | 'en-US'
 
@@ -16,6 +16,7 @@ const locale = ref<DemoLocale>(props.initialLocale)
 const editorRef = ref<HTMLDivElement | null>(null)
 const contentHtml = ref('')
 const savedRange = ref<Range | null>(null)
+const tablePickerWrapRef = ref<HTMLDivElement | null>(null)
 
 const labels = {
   'zh-CN': {
@@ -32,11 +33,13 @@ const labels = {
     heading1: '一级标题',
     heading2: '二级标题',
     paragraph: '正文',
+    blockFormat: '块级格式',
     quote: '引用',
     codeBlock: '代码块',
     inlineCode: '行内代码',
     bulletList: '无序列表',
     orderedList: '有序列表',
+    align: '对齐',
     alignLeft: '左对齐',
     alignCenter: '居中',
     alignRight: '右对齐',
@@ -45,6 +48,17 @@ const labels = {
     unlink: '取消链接',
     image: '插入图片',
     table: '插入表格',
+    tableSizeHint: '拖动选择表格大小',
+    tableOps: '表格操作',
+    insertRowAbove: '向上插入行',
+    insertRowBelow: '向下插入行',
+    deleteRow: '删除当前行',
+    insertColLeft: '向左插入列',
+    insertColRight: '向右插入列',
+    deleteCol: '删除当前列',
+    mergeRight: '向右合并单元格',
+    splitCell: '拆分单元格',
+    deleteTable: '删除表格',
     divider: '分割线',
     undo: '撤销',
     redo: '重做',
@@ -69,11 +83,13 @@ const labels = {
     heading1: 'Heading 1',
     heading2: 'Heading 2',
     paragraph: 'Paragraph',
+    blockFormat: 'Block Format',
     quote: 'Quote',
     codeBlock: 'Code Block',
     inlineCode: 'Inline Code',
     bulletList: 'Bulleted List',
     orderedList: 'Numbered List',
+    align: 'Alignment',
     alignLeft: 'Align Left',
     alignCenter: 'Align Center',
     alignRight: 'Align Right',
@@ -82,6 +98,17 @@ const labels = {
     unlink: 'Unlink',
     image: 'Insert Image',
     table: 'Insert Table',
+    tableSizeHint: 'Hover to choose table size',
+    tableOps: 'Table Actions',
+    insertRowAbove: 'Insert Row Above',
+    insertRowBelow: 'Insert Row Below',
+    deleteRow: 'Delete Row',
+    insertColLeft: 'Insert Column Left',
+    insertColRight: 'Insert Column Right',
+    deleteCol: 'Delete Column',
+    mergeRight: 'Merge Right Cell',
+    splitCell: 'Split Cell',
+    deleteTable: 'Delete Table',
     divider: 'Divider',
     undo: 'Undo',
     redo: 'Redo',
@@ -151,7 +178,26 @@ const selectedFontFamily = ref<string>('Arial')
 const selectedFontSize = ref<string>('3')
 const selectedTextColor = ref<string>('#111827')
 const selectedHighlightColor = ref<string>('#fff59d')
+const selectedBlock = ref<string>('p')
+const selectedAlign = ref<string>('justifyLeft')
+const tablePickerOpen = ref(false)
+const tableHoverRows = ref(0)
+const tableHoverCols = ref(0)
+const activeTableCell = ref<HTMLTableCellElement | null>(null)
 const activeState = ref<Record<string, boolean>>({})
+const tableGridSize = 8
+const tableGridRows = Array.from({ length: tableGridSize }, (_, index) => index + 1)
+const tableGridCols = Array.from({ length: tableGridSize }, (_, index) => index + 1)
+
+const tablePickerText = computed(() => {
+  if (!tableHoverRows.value || !tableHoverCols.value) {
+    return labels[locale.value].tableSizeHint
+  }
+  if (locale.value === 'zh-CN') {
+    return `插入 ${tableHoverRows.value} x ${tableHoverCols.value} 表格`
+  }
+  return `Insert ${tableHoverRows.value} x ${tableHoverCols.value} table`
+})
 
 const inlineTools = [
   { key: 'bold', command: 'bold', symbol: 'B' },
@@ -196,6 +242,15 @@ function isSelectionInsideEditor() {
   return editorRef.value.contains(selection.anchorNode)
 }
 
+function findSelectionElement(): Element | null {
+  if (typeof window === 'undefined') return null
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return null
+  const node = selection.anchorNode
+  if (!node) return null
+  return node instanceof Element ? node : node.parentElement
+}
+
 function cacheSelection() {
   if (!editorRef.value || typeof window === 'undefined') return
   const selection = window.getSelection()
@@ -218,6 +273,7 @@ function onInput() {
   if (!editorRef.value) return
   contentHtml.value = editorRef.value.innerHTML
   syncToolbarState()
+  updateTableContext()
 }
 
 function focusEditorWithSelection() {
@@ -233,6 +289,24 @@ function runCommand(command: string, value?: string) {
   document.execCommand(command, false, value)
   onInput()
   cacheSelection()
+}
+
+function getActiveCell(): HTMLTableCellElement | null {
+  if (!editorRef.value) return null
+  const element = findSelectionElement()
+  if (!element) return null
+  const cell = element.closest('td,th') as HTMLTableCellElement | null
+  if (!cell || !editorRef.value.contains(cell)) return null
+  return cell
+}
+
+function updateTableContext() {
+  const cell = getActiveCell()
+  if (!cell) {
+    activeTableCell.value = null
+    return
+  }
+  activeTableCell.value = cell
 }
 
 function syncToolbarState() {
@@ -289,6 +363,14 @@ function applyBlock(block: string) {
   runCommand('formatBlock', `<${block}>`)
 }
 
+function applySelectedBlock() {
+  applyBlock(selectedBlock.value)
+}
+
+function applySelectedAlign() {
+  runCommand(selectedAlign.value)
+}
+
 function insertInlineCode() {
   if (typeof window === 'undefined') return
   const selection = window.getSelection()
@@ -311,17 +393,15 @@ function insertImage() {
   runCommand('insertImage', url)
 }
 
-function insertTable() {
-  if (typeof window === 'undefined') return
-  const inputRows = Number(window.prompt(labels[locale.value].tableRowsPrompt, '3'))
-  const inputCols = Number(window.prompt(labels[locale.value].tableColsPrompt, '3'))
-  const rows = Number.isFinite(inputRows) ? Math.min(8, Math.max(1, Math.floor(inputRows))) : 3
-  const cols = Number.isFinite(inputCols) ? Math.min(8, Math.max(1, Math.floor(inputCols))) : 3
+function buildTableHtml(rows: number, cols: number) {
   const rowHtml = Array.from({ length: rows })
     .map((_, rowIndex) => {
       const cellHtml = Array.from({ length: cols })
         .map((__, colIndex) => {
           const text = `${rowIndex + 1}-${colIndex + 1}`
+          if (rowIndex === 0) {
+            return `<th style="border:1px solid #cbd5e1;padding:8px;background:#f8fafc;">${text}</th>`
+          }
           return `<td style="border:1px solid #cbd5e1;padding:8px;">${text}</td>`
         })
         .join('')
@@ -329,10 +409,203 @@ function insertTable() {
     })
     .join('')
 
+  return `<table style="border-collapse:collapse;width:100%;margin:12px 0;"><tbody>${rowHtml}</tbody></table><p></p>`
+}
+
+function insertTableBySize(rows: number, cols: number) {
+  if (rows < 1 || cols < 1) return
   runCommand(
     'insertHTML',
-    `<table style="border-collapse:collapse;width:100%;margin:12px 0;"><tbody>${rowHtml}</tbody></table><p></p>`
+    buildTableHtml(rows, cols)
   )
+}
+
+function toggleTablePicker() {
+  tablePickerOpen.value = !tablePickerOpen.value
+  cacheSelection()
+}
+
+function closeTablePicker() {
+  tablePickerOpen.value = false
+}
+
+function onTableCellHover(rows: number, cols: number) {
+  tableHoverRows.value = rows
+  tableHoverCols.value = cols
+}
+
+function onTableCellSelect(rows: number, cols: number) {
+  insertTableBySize(rows, cols)
+  tablePickerOpen.value = false
+}
+
+function createEmptyCell(tagName: 'td' | 'th') {
+  const cell = document.createElement(tagName)
+  cell.style.border = '1px solid #cbd5e1'
+  cell.style.padding = '8px'
+  if (tagName === 'th') {
+    cell.style.background = '#f8fafc'
+  }
+  cell.innerHTML = '&nbsp;'
+  return cell
+}
+
+function placeCaretInsideCell(cell: HTMLTableCellElement) {
+  if (typeof window === 'undefined') return
+  if (!cell.innerHTML.trim()) {
+    cell.innerHTML = '&nbsp;'
+  }
+  const range = document.createRange()
+  range.selectNodeContents(cell)
+  range.collapse(true)
+  const selection = window.getSelection()
+  if (!selection) return
+  selection.removeAllRanges()
+  selection.addRange(range)
+  cacheSelection()
+}
+
+function withActiveTableCell(
+  action: (table: HTMLTableElement, cell: HTMLTableCellElement) => void
+) {
+  focusEditorWithSelection()
+  const cell = getActiveCell() ?? activeTableCell.value
+  const table = cell?.closest('table') as HTMLTableElement | null
+  if (!cell || !table || !editorRef.value || !editorRef.value.contains(table)) return
+  action(table, cell)
+  onInput()
+}
+
+function insertRow(above: boolean) {
+  withActiveTableCell((_table, cell) => {
+    const row = cell.parentElement as HTMLTableRowElement
+    const section = row.parentElement as HTMLTableSectionElement
+    const rowIndex = Array.from(section.rows).indexOf(row)
+    const newRow = document.createElement('tr')
+    Array.from(row.cells).forEach((sourceCell) => {
+      const tagName = sourceCell.tagName.toLowerCase() === 'th' ? 'th' : 'td'
+      newRow.appendChild(createEmptyCell(tagName as 'td' | 'th'))
+    })
+    const targetIndex = above ? rowIndex : rowIndex + 1
+    const referenceRow = section.rows[targetIndex] ?? null
+    section.insertBefore(newRow, referenceRow)
+    const nextCell = newRow.cells[Math.min(cell.cellIndex, newRow.cells.length - 1)] as HTMLTableCellElement
+    placeCaretInsideCell(nextCell)
+  })
+}
+
+function deleteRow() {
+  withActiveTableCell((table, cell) => {
+    const row = cell.parentElement as HTMLTableRowElement
+    const section = row.parentElement as HTMLTableSectionElement
+    if (section.rows.length <= 1) {
+      table.remove()
+      return
+    }
+    const rowIndex = Array.from(section.rows).indexOf(row)
+    row.remove()
+    const fallbackRow = section.rows[Math.max(0, rowIndex - 1)] ?? section.rows[0]
+    const nextCell = fallbackRow.cells[Math.min(cell.cellIndex, fallbackRow.cells.length - 1)] as HTMLTableCellElement
+    placeCaretInsideCell(nextCell)
+  })
+}
+
+function insertColumn(left: boolean) {
+  withActiveTableCell((table, cell) => {
+    const insertIndex = left ? cell.cellIndex : cell.cellIndex + 1
+    Array.from(table.rows).forEach((row) => {
+      const baseCell =
+        (row.cells[Math.max(0, Math.min(row.cells.length - 1, insertIndex - 1))] as HTMLTableCellElement | undefined) ??
+        (row.cells[0] as HTMLTableCellElement | undefined)
+      const tagName = baseCell?.tagName.toLowerCase() === 'th' ? 'th' : 'td'
+      const newCell = createEmptyCell(tagName as 'td' | 'th')
+      const referenceCell = row.cells[insertIndex] ?? null
+      row.insertBefore(newCell, referenceCell)
+    })
+    const currentRow = cell.parentElement as HTMLTableRowElement
+    const nextIndex = left ? cell.cellIndex : cell.cellIndex + 1
+    const nextCell = currentRow.cells[nextIndex] as HTMLTableCellElement
+    placeCaretInsideCell(nextCell)
+  })
+}
+
+function deleteColumn() {
+  withActiveTableCell((table, cell) => {
+    const colIndex = cell.cellIndex
+    Array.from(table.rows).forEach((row) => {
+      if (row.cells[colIndex]) {
+        row.deleteCell(colIndex)
+      }
+    })
+    if (!table.rows.length || !table.rows[0].cells.length) {
+      table.remove()
+      return
+    }
+    const currentRow = table.rows[Math.min((cell.parentElement as HTMLTableRowElement).rowIndex, table.rows.length - 1)]
+    const nextCell = currentRow.cells[Math.min(colIndex, currentRow.cells.length - 1)] as HTMLTableCellElement
+    placeCaretInsideCell(nextCell)
+  })
+}
+
+function mergeRightCell() {
+  withActiveTableCell((_table, cell) => {
+    const nextCell = cell.nextElementSibling as HTMLTableCellElement | null
+    if (!nextCell) return
+    cell.colSpan = (cell.colSpan || 1) + (nextCell.colSpan || 1)
+    if (nextCell.innerHTML.trim()) {
+      cell.innerHTML = cell.innerHTML.trim()
+        ? `${cell.innerHTML} ${nextCell.innerHTML}`
+        : nextCell.innerHTML
+    }
+    nextCell.remove()
+    placeCaretInsideCell(cell)
+  })
+}
+
+function splitCell() {
+  withActiveTableCell((_table, cell) => {
+    const currentColSpan = cell.colSpan || 1
+    const currentRowSpan = cell.rowSpan || 1
+    if (currentColSpan === 1 && currentRowSpan === 1) return
+
+    const row = cell.parentElement as HTMLTableRowElement
+    const section = row.parentElement as HTMLTableSectionElement
+    const sectionRowIndex = Array.from(section.rows).indexOf(row)
+    const baseCellIndex = cell.cellIndex
+
+    if (currentColSpan > 1) {
+      cell.colSpan = 1
+      for (let index = 1; index < currentColSpan; index += 1) {
+        row.insertBefore(createEmptyCell('td'), row.cells[baseCellIndex + index] ?? null)
+      }
+    }
+
+    if (currentRowSpan > 1) {
+      cell.rowSpan = 1
+      for (let index = 1; index < currentRowSpan; index += 1) {
+        const targetRow = section.rows[sectionRowIndex + index]
+        if (!targetRow) continue
+        targetRow.insertBefore(createEmptyCell('td'), targetRow.cells[baseCellIndex] ?? null)
+      }
+    }
+
+    placeCaretInsideCell(cell)
+  })
+}
+
+function deleteTable() {
+  withActiveTableCell((table) => {
+    table.remove()
+  })
+}
+
+function handleDocumentMouseDown(event: MouseEvent) {
+  if (!tablePickerWrapRef.value) return
+  const target = event.target as Node | null
+  if (!target) return
+  if (!tablePickerWrapRef.value.contains(target)) {
+    closeTablePicker()
+  }
 }
 
 function resetContent() {
@@ -343,6 +616,7 @@ function resetContent() {
     editorRef.value.focus()
     cacheSelection()
     syncToolbarState()
+    updateTableContext()
   }
 }
 
@@ -350,18 +624,21 @@ function handleSelectionChange() {
   if (!isSelectionInsideEditor()) return
   cacheSelection()
   syncToolbarState()
+  updateTableContext()
 }
 
 onMounted(() => {
   resetContent()
   if (typeof document !== 'undefined') {
     document.addEventListener('selectionchange', handleSelectionChange)
+    document.addEventListener('mousedown', handleDocumentMouseDown)
   }
 })
 
 onBeforeUnmount(() => {
   if (typeof document !== 'undefined') {
     document.removeEventListener('selectionchange', handleSelectionChange)
+    document.removeEventListener('mousedown', handleDocumentMouseDown)
   }
 })
 
@@ -457,39 +734,75 @@ watch(
         {{ tool.symbol }}
       </button>
 
-      <button
-        v-for="tool in alignTools"
-        :key="tool.key"
-        type="button"
-        class="toolbar-btn"
-        :class="{ active: activeState[tool.command] }"
-        :title="labels[locale][tool.key]"
-        :aria-label="labels[locale][tool.key]"
-        @mousedown.prevent
-        @click="runCommand(tool.command)"
+      <label
+        class="toolbar-btn compact-dropdown"
+        :title="labels[locale].blockFormat"
+        :aria-label="labels[locale].blockFormat"
       >
-        {{ tool.symbol }}
-      </button>
+        <select v-model="selectedBlock" @change="applySelectedBlock">
+          <option v-for="tool in blockTools" :key="tool.key" :value="tool.block" :title="labels[locale][tool.key]">
+            {{ tool.symbol }}
+          </option>
+        </select>
+      </label>
 
-      <button
-        v-for="tool in blockTools"
-        :key="tool.key"
-        type="button"
-        class="toolbar-btn block-btn"
-        :title="labels[locale][tool.key]"
-        :aria-label="labels[locale][tool.key]"
-        @mousedown.prevent
-        @click="applyBlock(tool.block)"
+      <label
+        class="toolbar-btn compact-dropdown"
+        :title="labels[locale].align"
+        :aria-label="labels[locale].align"
       >
-        {{ tool.symbol }}
-      </button>
+        <select v-model="selectedAlign" @change="applySelectedAlign">
+          <option v-for="tool in alignTools" :key="tool.key" :value="tool.command" :title="labels[locale][tool.key]">
+            {{ tool.symbol }}
+          </option>
+        </select>
+      </label>
 
       <button type="button" class="toolbar-btn" :title="labels[locale].inlineCode" :aria-label="labels[locale].inlineCode" @mousedown.prevent @click="insertInlineCode">&lt;/&gt;</button>
       <button type="button" class="toolbar-btn" :title="labels[locale].link" :aria-label="labels[locale].link" @mousedown.prevent @click="insertLink">🔗</button>
       <button type="button" class="toolbar-btn" :title="labels[locale].unlink" :aria-label="labels[locale].unlink" @mousedown.prevent @click="runCommand('unlink')">⛓</button>
       <button type="button" class="toolbar-btn" :title="labels[locale].image" :aria-label="labels[locale].image" @mousedown.prevent @click="insertImage">🖼</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].table" :aria-label="labels[locale].table" @mousedown.prevent @click="insertTable">▦</button>
+      <div ref="tablePickerWrapRef" class="table-picker-wrap">
+        <button
+          type="button"
+          class="toolbar-btn"
+          :title="labels[locale].table"
+          :aria-label="labels[locale].table"
+          @mousedown.prevent
+          @click="toggleTablePicker"
+        >
+          ▦
+        </button>
+        <div v-if="tablePickerOpen" class="table-picker-panel" @mousedown.prevent>
+          <div class="table-picker-grid">
+            <div v-for="row in tableGridRows" :key="`row-${row}`" class="table-picker-row">
+              <button
+                v-for="col in tableGridCols"
+                :key="`cell-${row}-${col}`"
+                type="button"
+                class="table-picker-cell"
+                :class="{ active: row <= tableHoverRows && col <= tableHoverCols }"
+                @mouseenter="onTableCellHover(row, col)"
+                @click="onTableCellSelect(row, col)"
+              ></button>
+            </div>
+          </div>
+          <p class="table-picker-text">{{ tablePickerText }}</p>
+        </div>
+      </div>
       <button type="button" class="toolbar-btn" :title="labels[locale].divider" :aria-label="labels[locale].divider" @mousedown.prevent @click="runCommand('insertHorizontalRule')">─</button>
+    </div>
+
+    <div v-if="activeTableCell" class="toolbar table-toolbar">
+      <button type="button" class="toolbar-btn" :title="labels[locale].insertRowAbove" :aria-label="labels[locale].insertRowAbove" @mousedown.prevent @click="insertRow(true)">⇡+</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].insertRowBelow" :aria-label="labels[locale].insertRowBelow" @mousedown.prevent @click="insertRow(false)">⇣+</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].deleteRow" :aria-label="labels[locale].deleteRow" @mousedown.prevent @click="deleteRow">⇣−</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].insertColLeft" :aria-label="labels[locale].insertColLeft" @mousedown.prevent @click="insertColumn(true)">⇠+</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].insertColRight" :aria-label="labels[locale].insertColRight" @mousedown.prevent @click="insertColumn(false)">⇢+</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].deleteCol" :aria-label="labels[locale].deleteCol" @mousedown.prevent @click="deleteColumn">⇢−</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].mergeRight" :aria-label="labels[locale].mergeRight" @mousedown.prevent @click="mergeRightCell">⇢⇢</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].splitCell" :aria-label="labels[locale].splitCell" @mousedown.prevent @click="splitCell">⫶</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].deleteTable" :aria-label="labels[locale].deleteTable" @mousedown.prevent @click="deleteTable">⌫</button>
     </div>
 
     <div
@@ -560,10 +873,25 @@ watch(
   color: var(--vp-c-brand-1);
 }
 
-.block-btn {
-  width: auto;
-  min-width: 38px;
-  padding: 0 8px;
+.compact-dropdown {
+  position: relative;
+  width: 52px;
+  padding: 0;
+}
+
+.compact-dropdown select {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  text-align-last: center;
+  cursor: pointer;
+  appearance: none;
 }
 
 .color-btn {
@@ -582,6 +910,59 @@ watch(
   cursor: pointer;
 }
 
+.table-picker-wrap {
+  position: relative;
+}
+
+.table-picker-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  width: 188px;
+  padding: 10px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: var(--vp-c-bg);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.16);
+}
+
+.table-picker-grid {
+  display: grid;
+  gap: 2px;
+}
+
+.table-picker-row {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+}
+
+.table-picker-cell {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #d4d4d8;
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.table-picker-cell.active {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+}
+
+.table-picker-text {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--vp-c-text-2);
+}
+
+.table-toolbar {
+  padding-top: 2px;
+  border-top: 1px dashed var(--vp-c-divider);
+}
+
 .editor {
   min-height: 220px;
   border: 1px solid var(--vp-c-divider);
@@ -597,6 +978,11 @@ watch(
   border-radius: 6px;
   background: #e2e8f0;
   font-size: 12px;
+}
+
+.editor :deep(table td),
+.editor :deep(table th) {
+  min-width: 48px;
 }
 
 @media (max-width: 720px) {
