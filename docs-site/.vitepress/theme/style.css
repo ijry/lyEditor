@@ -1,19 +1,19 @@
-/* VitePress theme override — blue-teal color scheme */
+/* VitePress theme override — lightweight green editor palette */
 :root {
-  --vp-c-brand-1: #0f4c81;
-  --vp-c-brand-2: #0f5f9f;
-  --vp-c-brand-3: #1f7fbe;
-  --vp-c-brand-soft: rgba(15, 95, 159, 0.14);
-  --vp-button-brand-bg: #0f4c81;
-  --vp-button-brand-hover-bg: #0c3e6b;
-  --vp-button-brand-active-bg: #092f53;
+  --vp-c-brand-1: #1f7a5c;
+  --vp-c-brand-2: #2f9e7c;
+  --vp-c-brand-3: #55c08f;
+  --vp-c-brand-soft: rgba(47, 158, 124, 0.14);
+  --vp-button-brand-bg: #1f7a5c;
+  --vp-button-brand-hover-bg: #16624a;
+  --vp-button-brand-active-bg: #104a38;
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(135deg, #0f4c81, #1f7fbe);
+  --vp-home-hero-name-background: linear-gradient(135deg, #1f7a5c, #55c08f);
 }
 
 .dark {
-  --vp-c-brand-1: #1f7fbe;
-  --vp-c-brand-2: #49a7df;
-  --vp-c-brand-3: #7ec7ed;
-  --vp-c-brand-soft: rgba(73, 167, 223, 0.16);
+  --vp-c-brand-1: #55c08f;
+  --vp-c-brand-2: #7fd3aa;
+  --vp-c-brand-3: #a3e6c4;
+  --vp-c-brand-soft: rgba(127, 211, 170, 0.18);
 }

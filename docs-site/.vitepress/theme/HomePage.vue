@@ -392,8 +392,8 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   --ly-ink: #0f172a;
   --ly-muted: #475569;
   --ly-line: #e2e8f0;
-  --ly-brand: #0f4c81;
-  --ly-blue: #0369a1;
+  --ly-brand: #1f7a5c;
+  --ly-blue: #2f9e7c;
   font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   color: var(--ly-ink);
   background: var(--ly-bg);
@@ -404,8 +404,8 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   overflow: hidden;
   padding: 92px 24px 72px;
   background:
-    linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.96)),
-    linear-gradient(90deg, #0f172a, #172554);
+    linear-gradient(135deg, rgba(10, 40, 31, 0.96), rgba(19, 62, 48, 0.96)),
+    linear-gradient(90deg, #0d3529, #185241);
 }
 
 .container {
@@ -429,18 +429,18 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   width: fit-content;
   min-height: 28px;
   padding: 5px 12px;
-  border: 1px solid rgba(15, 76, 129, 0.2);
+  border: 1px solid rgba(31, 122, 92, 0.22);
   border-radius: 999px;
-  background: rgba(15, 76, 129, 0.1);
-  color: #0f4c81;
+  background: rgba(31, 122, 92, 0.1);
+  color: #1f7a5c;
   font-size: 13px;
   font-weight: 700;
 }
 
 .hero-shell .eyebrow {
-  border-color: rgba(73, 167, 223, 0.28);
-  background: rgba(73, 167, 223, 0.14);
-  color: #cdeeff;
+  border-color: rgba(127, 211, 170, 0.38);
+  background: rgba(127, 211, 170, 0.17);
+  color: #e6fff2;
 }
 
 .hero-copy h1 {
@@ -481,14 +481,14 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 }
 
 .btn.primary {
-  border: 1px solid #1f7fbe;
-  background: #0f4c81;
+  border: 1px solid #55c08f;
+  background: #1f7a5c;
   color: #fff;
-  box-shadow: 0 16px 34px rgba(15, 76, 129, 0.26);
+  box-shadow: 0 16px 34px rgba(31, 122, 92, 0.3);
 }
 
 .btn.primary:hover {
-  background: #0c3e6b;
+  background: #16624a;
   color: #fff;
 }
 
@@ -539,10 +539,10 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 }
 
 .hero-demo-shell {
-  border: 1px solid rgba(148, 163, 184, 0.26);
+  border: 1px solid rgba(148, 196, 176, 0.3);
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.56);
-  box-shadow: 0 20px 50px rgba(2, 6, 23, 0.35);
+  background: rgba(7, 35, 26, 0.56);
+  box-shadow: 0 20px 50px rgba(2, 18, 12, 0.34);
   backdrop-filter: blur(3px);
 }
 
@@ -563,10 +563,10 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 .hero-demo-shell :deep(.action-btn),
 .hero-demo-shell :deep(.toolbar-select),
 .hero-demo-shell :deep(.toolbar-color) {
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid rgba(148, 196, 176, 0.34);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.58);
-  color: #e2e8f0;
+  background: rgba(7, 35, 26, 0.58);
+  color: #e6fff2;
 }
 
 .hero-demo-shell :deep(.toolbar-select select) {
@@ -575,7 +575,26 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 
 .hero-demo-shell :deep(.toolbar-select span),
 .hero-demo-shell :deep(.toolbar-color span) {
-  color: #cbd5e1;
+  color: #c7e7d9;
+}
+
+.hero-demo-shell :deep(.table-picker-panel) {
+  border-color: rgba(148, 196, 176, 0.35);
+  background: rgba(5, 28, 21, 0.94);
+}
+
+.hero-demo-shell :deep(.table-picker-cell) {
+  border-color: rgba(148, 196, 176, 0.36);
+  background: rgba(9, 45, 33, 0.62);
+}
+
+.hero-demo-shell :deep(.table-picker-cell.active) {
+  border-color: #86efac;
+  background: rgba(34, 197, 94, 0.32);
+}
+
+.hero-demo-shell :deep(.table-picker-text) {
+  color: #c7e7d9;
 }
 
 .hero-demo-shell :deep(.editor) {
@@ -932,7 +951,7 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   margin: 20px 0;
   padding: 26px;
   border-radius: 12px;
-  background: #0f172a;
+  background: #0e3126;
   color: #fff;
   text-align: center;
 }
@@ -971,7 +990,7 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 }
 
 .channel-card:hover {
-  border-color: rgba(15, 76, 129, 0.34);
+  border-color: rgba(31, 122, 92, 0.34);
   box-shadow: 0 18px 42px rgba(15, 23, 42, 0.11);
 }
 
@@ -983,7 +1002,7 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 
 .final-cta {
   padding: 76px 24px;
-  background: #0f172a;
+  background: #0d3529;
 }
 
 .final-cta-inner {
