@@ -417,7 +417,7 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   max-width: 1320px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(520px, 1.15fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(620px, 1.35fr);
   gap: 48px;
   align-items: center;
 }
@@ -535,10 +535,12 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 
 .hero-visual {
   position: relative;
-  min-height: 430px;
+  min-height: 520px;
 }
 
 .hero-demo-shell {
+  min-height: 520px;
+  height: 100%;
   border: 1px solid rgba(148, 196, 176, 0.3);
   border-radius: 14px;
   background: rgba(7, 35, 26, 0.56);
@@ -547,6 +549,10 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 }
 
 .hero-demo-shell :deep(.home-editor-demo) {
+  --home-demo-editor-height: 320px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   margin: 0;
   border: 0;
   border-radius: 14px;
@@ -601,6 +607,8 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   border-color: rgba(148, 163, 184, 0.3);
   background: rgba(255, 255, 255, 0.96);
   color: #0f172a;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .browser-frame,

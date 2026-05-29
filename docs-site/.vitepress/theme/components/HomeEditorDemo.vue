@@ -819,6 +819,9 @@ watch(
 
 <style scoped>
 .home-editor-demo {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   border: 1px solid var(--vp-c-divider);
   border-radius: 12px;
   padding: 16px;
@@ -964,13 +967,15 @@ watch(
 }
 
 .editor {
-  min-height: 220px;
+  height: var(--home-demo-editor-height, 280px);
+  min-height: var(--home-demo-editor-height, 280px);
   border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
   padding: 12px;
   background: var(--vp-c-bg);
   line-height: 1.7;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: auto;
 }
 
 .editor :deep(code) {
@@ -994,6 +999,10 @@ watch(
   .header-actions {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .editor {
+    --home-demo-editor-height: 220px;
   }
 }
 </style>
