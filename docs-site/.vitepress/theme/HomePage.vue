@@ -589,6 +589,39 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   background: rgba(5, 28, 21, 0.94);
 }
 
+.hero-demo-shell :deep(.toolbar-menu-panel) {
+  border-color: rgba(148, 196, 176, 0.35);
+  background: rgba(5, 28, 21, 0.94);
+}
+
+.hero-demo-shell :deep(.toolbar-menu-item) {
+  color: #e6fff2;
+}
+
+.hero-demo-shell :deep(.toolbar-menu-item:hover),
+.hero-demo-shell :deep(.toolbar-menu-item.active) {
+  border-color: #86efac;
+  background: rgba(34, 197, 94, 0.25);
+}
+
+.hero-demo-shell :deep(.style-chip),
+.hero-demo-shell :deep(.style-color-item) {
+  border-color: rgba(148, 196, 176, 0.34);
+  background: rgba(7, 35, 26, 0.58);
+  color: #e6fff2;
+}
+
+.hero-demo-shell :deep(.style-chip:hover),
+.hero-demo-shell :deep(.style-chip.active) {
+  border-color: #86efac;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.hero-demo-shell :deep(.style-color-label) {
+  color: #d8f3e4;
+}
+
 .hero-demo-shell :deep(.table-picker-cell) {
   border-color: rgba(148, 196, 176, 0.36);
   background: rgba(9, 45, 33, 0.62);

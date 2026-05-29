@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import EditorIcon from './EditorIcon.vue'
 
 type DemoLocale = 'zh-CN' | 'en-US'
 
@@ -17,6 +18,10 @@ const editorRef = ref<HTMLDivElement | null>(null)
 const contentHtml = ref('')
 const savedRange = ref<Range | null>(null)
 const tablePickerWrapRef = ref<HTMLDivElement | null>(null)
+const styleMenuWrapRef = ref<HTMLDivElement | null>(null)
+const paragraphMenuWrapRef = ref<HTMLDivElement | null>(null)
+const insertMenuWrapRef = ref<HTMLDivElement | null>(null)
+const tableOpsMenuWrapRef = ref<HTMLDivElement | null>(null)
 
 const labels = {
   'zh-CN': {
@@ -26,6 +31,9 @@ const labels = {
     fontSize: '字号',
     textColor: '文字色',
     highlightColor: '高亮色',
+    styleMenu: '文本样式',
+    paragraphMenu: '段落与对齐',
+    insertMenu: '插入项',
     bold: '加粗',
     italic: '斜体',
     underline: '下划线',
@@ -76,6 +84,9 @@ const labels = {
     fontSize: 'Size',
     textColor: 'Text',
     highlightColor: 'Highlight',
+    styleMenu: 'Text Style',
+    paragraphMenu: 'Paragraph & Align',
+    insertMenu: 'Insert',
     bold: 'Bold',
     italic: 'Italic',
     underline: 'Underline',
@@ -178,9 +189,11 @@ const selectedFontFamily = ref<string>('Arial')
 const selectedFontSize = ref<string>('3')
 const selectedTextColor = ref<string>('#111827')
 const selectedHighlightColor = ref<string>('#fff59d')
-const selectedBlock = ref<string>('p')
-const selectedAlign = ref<string>('justifyLeft')
 const tablePickerOpen = ref(false)
+const styleMenuOpen = ref(false)
+const paragraphMenuOpen = ref(false)
+const insertMenuOpen = ref(false)
+const tableOpsMenuOpen = ref(false)
 const tableHoverRows = ref(0)
 const tableHoverCols = ref(0)
 const activeTableCell = ref<HTMLTableCellElement | null>(null)
@@ -200,31 +213,70 @@ const tablePickerText = computed(() => {
 })
 
 const inlineTools = [
-  { key: 'bold', command: 'bold', symbol: 'B' },
-  { key: 'italic', command: 'italic', symbol: 'I' },
-  { key: 'underline', command: 'underline', symbol: 'U' },
-  { key: 'strike', command: 'strikeThrough', symbol: 'S' }
+  { key: 'bold', command: 'bold', icon: 'bold' },
+  { key: 'italic', command: 'italic', icon: 'italic' },
+  { key: 'underline', command: 'underline', icon: 'underline' },
+  { key: 'strike', command: 'strikeThrough', icon: 'strike' }
 ] as const
 
-const blockTools = [
-  { key: 'heading1', block: 'h1', symbol: 'H1' },
-  { key: 'heading2', block: 'h2', symbol: 'H2' },
-  { key: 'paragraph', block: 'p', symbol: 'P' },
-  { key: 'quote', block: 'blockquote', symbol: '"' },
-  { key: 'codeBlock', block: 'pre', symbol: '</>' }
-] as const
+type LocalizedLabelKey = keyof (typeof labels)['zh-CN']
 
-const listTools = [
-  { key: 'bulletList', command: 'insertUnorderedList', symbol: 'UL' },
-  { key: 'orderedList', command: 'insertOrderedList', symbol: 'OL' }
-] as const
+const paragraphMenuItems = [
+  { key: 'heading1', labelKey: 'heading1', icon: 'heading1', kind: 'block', value: 'h1' },
+  { key: 'heading2', labelKey: 'heading2', icon: 'heading2', kind: 'block', value: 'h2' },
+  { key: 'paragraph', labelKey: 'paragraph', icon: 'paragraph', kind: 'block', value: 'p' },
+  { key: 'quote', labelKey: 'quote', icon: 'quote', kind: 'block', value: 'blockquote' },
+  { key: 'codeBlock', labelKey: 'codeBlock', icon: 'codeBlock', kind: 'block', value: 'pre' },
+  { key: 'bulletList', labelKey: 'bulletList', icon: 'listBullet', kind: 'command', value: 'insertUnorderedList' },
+  { key: 'orderedList', labelKey: 'orderedList', icon: 'listOrdered', kind: 'command', value: 'insertOrderedList' },
+  { key: 'alignLeft', labelKey: 'alignLeft', icon: 'alignLeft', kind: 'command', value: 'justifyLeft' },
+  { key: 'alignCenter', labelKey: 'alignCenter', icon: 'alignCenter', kind: 'command', value: 'justifyCenter' },
+  { key: 'alignRight', labelKey: 'alignRight', icon: 'alignRight', kind: 'command', value: 'justifyRight' },
+  { key: 'alignJustify', labelKey: 'alignJustify', icon: 'alignJustify', kind: 'command', value: 'justifyFull' }
+] as const satisfies Array<{
+  key: string
+  labelKey: LocalizedLabelKey
+  icon: string
+  kind: 'block' | 'command'
+  value: string
+}>
 
-const alignTools = [
-  { key: 'alignLeft', command: 'justifyLeft', symbol: 'L' },
-  { key: 'alignCenter', command: 'justifyCenter', symbol: 'C' },
-  { key: 'alignRight', command: 'justifyRight', symbol: 'R' },
-  { key: 'alignJustify', command: 'justifyFull', symbol: 'J' }
-] as const
+const insertMenuItems = [
+  { key: 'inlineCode', labelKey: 'inlineCode', icon: 'inlineCode' },
+  { key: 'link', labelKey: 'link', icon: 'link' },
+  { key: 'unlink', labelKey: 'unlink', icon: 'unlink' },
+  { key: 'image', labelKey: 'image', icon: 'image' },
+  { key: 'divider', labelKey: 'divider', icon: 'divider' }
+] as const satisfies Array<{
+  key: 'inlineCode' | 'link' | 'unlink' | 'image' | 'divider'
+  labelKey: LocalizedLabelKey
+  icon: string
+}>
+
+const tableOpsMenuItems = [
+  { key: 'insertRowAbove', labelKey: 'insertRowAbove', icon: 'rowAddTop' },
+  { key: 'insertRowBelow', labelKey: 'insertRowBelow', icon: 'rowAddBottom' },
+  { key: 'deleteRow', labelKey: 'deleteRow', icon: 'rowDelete' },
+  { key: 'insertColLeft', labelKey: 'insertColLeft', icon: 'colAddLeft' },
+  { key: 'insertColRight', labelKey: 'insertColRight', icon: 'colAddRight' },
+  { key: 'deleteCol', labelKey: 'deleteCol', icon: 'colDelete' },
+  { key: 'mergeRight', labelKey: 'mergeRight', icon: 'mergeRight' },
+  { key: 'splitCell', labelKey: 'splitCell', icon: 'splitCell' },
+  { key: 'deleteTable', labelKey: 'deleteTable', icon: 'deleteTable' }
+] as const satisfies Array<{
+  key:
+    | 'insertRowAbove'
+    | 'insertRowBelow'
+    | 'deleteRow'
+    | 'insertColLeft'
+    | 'insertColRight'
+    | 'deleteCol'
+    | 'mergeRight'
+    | 'splitCell'
+    | 'deleteTable'
+  labelKey: LocalizedLabelKey
+  icon: string
+}>
 
 function escapeHtml(value: string): string {
   return value
@@ -337,17 +389,13 @@ function applyFontSize() {
   runCommand('fontSize', selectedFontSize.value)
 }
 
-function cycleFontFamily() {
-  const currentIndex = fontFamilyOptions.findIndex((item) => item.value === selectedFontFamily.value)
-  const nextIndex = (currentIndex + 1) % fontFamilyOptions.length
-  selectedFontFamily.value = fontFamilyOptions[nextIndex].value
+function applyFontFamilyValue(value: string) {
+  selectedFontFamily.value = value
   applyFontFamily()
 }
 
-function cycleFontSize() {
-  const currentIndex = fontSizeOptions.findIndex((item) => item.value === selectedFontSize.value)
-  const nextIndex = (currentIndex + 1) % fontSizeOptions.length
-  selectedFontSize.value = fontSizeOptions[nextIndex].value
+function applyFontSizeValue(value: string) {
+  selectedFontSize.value = value
   applyFontSize()
 }
 
@@ -363,12 +411,64 @@ function applyBlock(block: string) {
   runCommand('formatBlock', `<${block}>`)
 }
 
-function applySelectedBlock() {
-  applyBlock(selectedBlock.value)
+function closeMenus() {
+  styleMenuOpen.value = false
+  paragraphMenuOpen.value = false
+  insertMenuOpen.value = false
+  tableOpsMenuOpen.value = false
+  tablePickerOpen.value = false
 }
 
-function applySelectedAlign() {
-  runCommand(selectedAlign.value)
+function toggleStyleMenu() {
+  const next = !styleMenuOpen.value
+  closeMenus()
+  styleMenuOpen.value = next
+  cacheSelection()
+}
+
+function toggleParagraphMenu() {
+  const next = !paragraphMenuOpen.value
+  closeMenus()
+  paragraphMenuOpen.value = next
+  cacheSelection()
+}
+
+function toggleInsertMenu() {
+  const next = !insertMenuOpen.value
+  closeMenus()
+  insertMenuOpen.value = next
+  cacheSelection()
+}
+
+function toggleTableOpsMenu() {
+  const next = !tableOpsMenuOpen.value
+  closeMenus()
+  tableOpsMenuOpen.value = next
+  cacheSelection()
+}
+
+function onParagraphSelect(item: (typeof paragraphMenuItems)[number]) {
+  if (item.kind === 'block') {
+    applyBlock(item.value)
+  } else {
+    runCommand(item.value)
+  }
+  paragraphMenuOpen.value = false
+}
+
+function onInsertSelect(item: (typeof insertMenuItems)[number]) {
+  if (item.key === 'inlineCode') {
+    insertInlineCode()
+  } else if (item.key === 'link') {
+    insertLink()
+  } else if (item.key === 'unlink') {
+    runCommand('unlink')
+  } else if (item.key === 'image') {
+    insertImage()
+  } else if (item.key === 'divider') {
+    runCommand('insertHorizontalRule')
+  }
+  insertMenuOpen.value = false
 }
 
 function insertInlineCode() {
@@ -421,7 +521,9 @@ function insertTableBySize(rows: number, cols: number) {
 }
 
 function toggleTablePicker() {
-  tablePickerOpen.value = !tablePickerOpen.value
+  const next = !tablePickerOpen.value
+  closeMenus()
+  tablePickerOpen.value = next
   cacheSelection()
 }
 
@@ -599,12 +701,37 @@ function deleteTable() {
   })
 }
 
+function onTableOpsSelect(key: (typeof tableOpsMenuItems)[number]['key']) {
+  if (key === 'insertRowAbove') insertRow(true)
+  else if (key === 'insertRowBelow') insertRow(false)
+  else if (key === 'deleteRow') deleteRow()
+  else if (key === 'insertColLeft') insertColumn(true)
+  else if (key === 'insertColRight') insertColumn(false)
+  else if (key === 'deleteCol') deleteColumn()
+  else if (key === 'mergeRight') mergeRightCell()
+  else if (key === 'splitCell') splitCell()
+  else if (key === 'deleteTable') deleteTable()
+  tableOpsMenuOpen.value = false
+}
+
 function handleDocumentMouseDown(event: MouseEvent) {
-  if (!tablePickerWrapRef.value) return
   const target = event.target as Node | null
   if (!target) return
-  if (!tablePickerWrapRef.value.contains(target)) {
+
+  if (tablePickerWrapRef.value && !tablePickerWrapRef.value.contains(target)) {
     closeTablePicker()
+  }
+  if (styleMenuWrapRef.value && !styleMenuWrapRef.value.contains(target)) {
+    styleMenuOpen.value = false
+  }
+  if (paragraphMenuWrapRef.value && !paragraphMenuWrapRef.value.contains(target)) {
+    paragraphMenuOpen.value = false
+  }
+  if (insertMenuWrapRef.value && !insertMenuWrapRef.value.contains(target)) {
+    insertMenuOpen.value = false
+  }
+  if (tableOpsMenuWrapRef.value && !tableOpsMenuWrapRef.value.contains(target)) {
+    tableOpsMenuOpen.value = false
   }
 }
 
@@ -666,7 +793,7 @@ watch(
           :aria-label="labels[locale].reset"
           @click="resetContent"
         >
-          ↻
+          <EditorIcon name="reset" />
         </button>
       </div>
     </header>
@@ -675,37 +802,26 @@ watch(
       <button
         type="button"
         class="toolbar-btn"
-        :title="`${labels[locale].fontFamily}: ${selectedFontFamily}`"
-        :aria-label="`${labels[locale].fontFamily}: ${selectedFontFamily}`"
+        :title="labels[locale].undo"
+        :aria-label="labels[locale].undo"
         @mousedown.prevent
-        @click="cycleFontFamily"
+        @click="runCommand('undo')"
       >
-        𝑭
+        <EditorIcon name="undo" />
       </button>
       <button
         type="button"
         class="toolbar-btn"
-        :title="`${labels[locale].fontSize}: ${fontSizeOptions.find((item) => item.value === selectedFontSize)?.label ?? '14'}px`"
-        :aria-label="`${labels[locale].fontSize}: ${fontSizeOptions.find((item) => item.value === selectedFontSize)?.label ?? '14'}px`"
+        :title="labels[locale].redo"
+        :aria-label="labels[locale].redo"
         @mousedown.prevent
-        @click="cycleFontSize"
+        @click="runCommand('redo')"
       >
-        A↕
+        <EditorIcon name="redo" />
       </button>
-      <label class="toolbar-btn color-btn" :title="labels[locale].textColor" :aria-label="labels[locale].textColor">
-        A
-        <input v-model="selectedTextColor" type="color" @input="applyTextColor" />
-      </label>
-      <label class="toolbar-btn color-btn" :title="labels[locale].highlightColor" :aria-label="labels[locale].highlightColor">
-        🖍
-        <input v-model="selectedHighlightColor" type="color" @input="applyHighlightColor" />
-      </label>
-      <button type="button" class="toolbar-btn" :title="labels[locale].undo" :aria-label="labels[locale].undo" @mousedown.prevent @click="runCommand('undo')">↺</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].redo" :aria-label="labels[locale].redo" @mousedown.prevent @click="runCommand('redo')">↻</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].removeFormat" :aria-label="labels[locale].removeFormat" @mousedown.prevent @click="runCommand('removeFormat')">T×</button>
-    </div>
 
-    <div class="toolbar">
+      <span class="toolbar-separator"></span>
+
       <button
         v-for="tool in inlineTools"
         :key="tool.key"
@@ -717,51 +833,139 @@ watch(
         @mousedown.prevent
         @click="runCommand(tool.command)"
       >
-        {{ tool.symbol }}
+        <EditorIcon :name="tool.icon" />
       </button>
 
-      <button
-        v-for="tool in listTools"
-        :key="tool.key"
-        type="button"
-        class="toolbar-btn"
-        :class="{ active: activeState[tool.command] }"
-        :title="labels[locale][tool.key]"
-        :aria-label="labels[locale][tool.key]"
-        @mousedown.prevent
-        @click="runCommand(tool.command)"
-      >
-        {{ tool.symbol }}
-      </button>
+      <span class="toolbar-separator"></span>
 
-      <label
-        class="toolbar-btn compact-dropdown"
-        :title="labels[locale].blockFormat"
-        :aria-label="labels[locale].blockFormat"
-      >
-        <select v-model="selectedBlock" @change="applySelectedBlock">
-          <option v-for="tool in blockTools" :key="tool.key" :value="tool.block" :title="labels[locale][tool.key]">
-            {{ tool.symbol }}
-          </option>
-        </select>
-      </label>
+      <div ref="styleMenuWrapRef" class="toolbar-menu-wrap">
+        <button
+          type="button"
+          class="toolbar-btn toolbar-menu-trigger"
+          :title="labels[locale].styleMenu"
+          :aria-label="labels[locale].styleMenu"
+          @mousedown.prevent
+          @click="toggleStyleMenu"
+        >
+          <EditorIcon name="fontFamily" />
+          <EditorIcon class="menu-caret" name="chevronDown" :size="13" />
+        </button>
+        <div v-if="styleMenuOpen" class="toolbar-menu-panel style-menu-panel" @mousedown.prevent>
+          <section class="toolbar-menu-group">
+            <header>{{ labels[locale].fontFamily }}</header>
+            <div class="style-chip-list">
+              <button
+                v-for="item in fontFamilyOptions"
+                :key="`font-family-${item.value}`"
+                type="button"
+                class="style-chip"
+                :class="{ active: selectedFontFamily === item.value }"
+                @click="applyFontFamilyValue(item.value)"
+              >
+                {{ item.label }}
+              </button>
+            </div>
+          </section>
 
-      <label
-        class="toolbar-btn compact-dropdown"
-        :title="labels[locale].align"
-        :aria-label="labels[locale].align"
-      >
-        <select v-model="selectedAlign" @change="applySelectedAlign">
-          <option v-for="tool in alignTools" :key="tool.key" :value="tool.command" :title="labels[locale][tool.key]">
-            {{ tool.symbol }}
-          </option>
-        </select>
-      </label>
+          <section class="toolbar-menu-group">
+            <header>{{ labels[locale].fontSize }}</header>
+            <div class="style-chip-list">
+              <button
+                v-for="item in fontSizeOptions"
+                :key="`font-size-${item.value}`"
+                type="button"
+                class="style-chip"
+                :class="{ active: selectedFontSize === item.value }"
+                @click="applyFontSizeValue(item.value)"
+              >
+                {{ item.label }}px
+              </button>
+            </div>
+          </section>
 
-      <button type="button" class="toolbar-btn" :title="labels[locale].inlineCode" :aria-label="labels[locale].inlineCode" @mousedown.prevent @click="insertInlineCode">&lt;/&gt;</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].link" :aria-label="labels[locale].link" @mousedown.prevent @click="insertLink">🔗</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].unlink" :aria-label="labels[locale].unlink" @mousedown.prevent @click="runCommand('unlink')">⛓</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].image" :aria-label="labels[locale].image" @mousedown.prevent @click="insertImage">🖼</button>
+          <section class="toolbar-menu-group style-color-grid">
+            <label class="style-color-item">
+              <span class="style-color-label">
+                <EditorIcon name="textColor" :size="14" />
+                <span>{{ labels[locale].textColor }}</span>
+              </span>
+              <input v-model="selectedTextColor" type="color" @input="applyTextColor" />
+            </label>
+            <label class="style-color-item">
+              <span class="style-color-label">
+                <EditorIcon name="highlight" :size="14" />
+                <span>{{ labels[locale].highlightColor }}</span>
+              </span>
+              <input v-model="selectedHighlightColor" type="color" @input="applyHighlightColor" />
+            </label>
+          </section>
+
+          <button
+            type="button"
+            class="toolbar-menu-item"
+            :title="labels[locale].removeFormat"
+            :aria-label="labels[locale].removeFormat"
+            @click="runCommand('removeFormat'); styleMenuOpen = false"
+          >
+            <span class="toolbar-menu-item-icon"><EditorIcon name="clear" /></span>
+            <span>{{ labels[locale].removeFormat }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div ref="paragraphMenuWrapRef" class="toolbar-menu-wrap">
+        <button
+          type="button"
+          class="toolbar-btn toolbar-menu-trigger"
+          :title="labels[locale].paragraphMenu"
+          :aria-label="labels[locale].paragraphMenu"
+          @mousedown.prevent
+          @click="toggleParagraphMenu"
+        >
+          <EditorIcon name="paragraph" />
+          <EditorIcon class="menu-caret" name="chevronDown" :size="13" />
+        </button>
+        <div v-if="paragraphMenuOpen" class="toolbar-menu-panel" @mousedown.prevent>
+          <button
+            v-for="item in paragraphMenuItems"
+            :key="item.key"
+            type="button"
+            class="toolbar-menu-item"
+            :class="{ active: item.kind === 'command' && activeState[item.value] }"
+            @click="onParagraphSelect(item)"
+          >
+            <span class="toolbar-menu-item-icon"><EditorIcon :name="item.icon" /></span>
+            <span>{{ labels[locale][item.labelKey] }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div ref="insertMenuWrapRef" class="toolbar-menu-wrap">
+        <button
+          type="button"
+          class="toolbar-btn toolbar-menu-trigger"
+          :title="labels[locale].insertMenu"
+          :aria-label="labels[locale].insertMenu"
+          @mousedown.prevent
+          @click="toggleInsertMenu"
+        >
+          <EditorIcon name="image" />
+          <EditorIcon class="menu-caret" name="chevronDown" :size="13" />
+        </button>
+        <div v-if="insertMenuOpen" class="toolbar-menu-panel" @mousedown.prevent>
+          <button
+            v-for="item in insertMenuItems"
+            :key="item.key"
+            type="button"
+            class="toolbar-menu-item"
+            @click="onInsertSelect(item)"
+          >
+            <span class="toolbar-menu-item-icon"><EditorIcon :name="item.icon" /></span>
+            <span>{{ labels[locale][item.labelKey] }}</span>
+          </button>
+        </div>
+      </div>
+
       <div ref="tablePickerWrapRef" class="table-picker-wrap">
         <button
           type="button"
@@ -771,7 +975,7 @@ watch(
           @mousedown.prevent
           @click="toggleTablePicker"
         >
-          ▦
+          <EditorIcon name="table" />
         </button>
         <div v-if="tablePickerOpen" class="table-picker-panel" @mousedown.prevent>
           <div class="table-picker-grid">
@@ -790,19 +994,32 @@ watch(
           <p class="table-picker-text">{{ tablePickerText }}</p>
         </div>
       </div>
-      <button type="button" class="toolbar-btn" :title="labels[locale].divider" :aria-label="labels[locale].divider" @mousedown.prevent @click="runCommand('insertHorizontalRule')">─</button>
-    </div>
 
-    <div v-if="activeTableCell" class="toolbar table-toolbar">
-      <button type="button" class="toolbar-btn" :title="labels[locale].insertRowAbove" :aria-label="labels[locale].insertRowAbove" @mousedown.prevent @click="insertRow(true)">⇡+</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].insertRowBelow" :aria-label="labels[locale].insertRowBelow" @mousedown.prevent @click="insertRow(false)">⇣+</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].deleteRow" :aria-label="labels[locale].deleteRow" @mousedown.prevent @click="deleteRow">⇣−</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].insertColLeft" :aria-label="labels[locale].insertColLeft" @mousedown.prevent @click="insertColumn(true)">⇠+</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].insertColRight" :aria-label="labels[locale].insertColRight" @mousedown.prevent @click="insertColumn(false)">⇢+</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].deleteCol" :aria-label="labels[locale].deleteCol" @mousedown.prevent @click="deleteColumn">⇢−</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].mergeRight" :aria-label="labels[locale].mergeRight" @mousedown.prevent @click="mergeRightCell">⇢⇢</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].splitCell" :aria-label="labels[locale].splitCell" @mousedown.prevent @click="splitCell">⫶</button>
-      <button type="button" class="toolbar-btn" :title="labels[locale].deleteTable" :aria-label="labels[locale].deleteTable" @mousedown.prevent @click="deleteTable">⌫</button>
+      <div v-if="activeTableCell" ref="tableOpsMenuWrapRef" class="toolbar-menu-wrap">
+        <button
+          type="button"
+          class="toolbar-btn toolbar-menu-trigger"
+          :title="labels[locale].tableOps"
+          :aria-label="labels[locale].tableOps"
+          @mousedown.prevent
+          @click="toggleTableOpsMenu"
+        >
+          <EditorIcon name="rowAddTop" />
+          <EditorIcon class="menu-caret" name="chevronDown" :size="13" />
+        </button>
+        <div v-if="tableOpsMenuOpen" class="toolbar-menu-panel" @mousedown.prevent>
+          <button
+            v-for="item in tableOpsMenuItems"
+            :key="item.key"
+            type="button"
+            class="toolbar-menu-item"
+            @click="onTableOpsSelect(item.key)"
+          >
+            <span class="toolbar-menu-item-icon"><EditorIcon :name="item.icon" /></span>
+            <span>{{ labels[locale][item.labelKey] }}</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <div
@@ -824,7 +1041,7 @@ watch(
   min-height: 0;
   border: 1px solid var(--vp-c-divider);
   border-radius: 12px;
-  padding: 16px;
+  padding: 14px;
   margin: 16px 0;
   background: var(--vp-c-bg-soft);
 }
@@ -833,8 +1050,8 @@ watch(
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .header-actions {
@@ -845,29 +1062,56 @@ watch(
 
 .locale-switch {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+}
+
+.locale-switch button {
+  height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 7px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 12px;
+  cursor: pointer;
 }
 
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--vp-c-bg) 90%, transparent);
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 18px;
+  background: var(--vp-c-divider);
+  margin: 0 2px;
 }
 
 .toolbar-btn {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
   cursor: pointer;
+}
+
+.toolbar-btn :deep(svg) {
+  width: 16px;
+  height: 16px;
 }
 
 .toolbar-btn:hover,
@@ -876,41 +1120,141 @@ watch(
   color: var(--vp-c-brand-1);
 }
 
-.compact-dropdown {
+.toolbar-menu-wrap {
   position: relative;
-  width: 52px;
-  padding: 0;
 }
 
-.compact-dropdown select {
-  width: 100%;
-  height: 100%;
+.toolbar-menu-trigger {
+  width: auto;
+  min-width: 46px;
+  padding: 0 6px;
+  gap: 3px;
+}
+
+.menu-caret {
+  opacity: 0.72;
+}
+
+.toolbar-menu-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 35;
+  min-width: 190px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 6px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: var(--vp-c-bg);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.16);
+}
+
+.style-menu-panel {
+  width: 296px;
+  min-width: 296px;
+  display: grid;
+  gap: 8px;
+}
+
+.toolbar-menu-group {
+  display: grid;
+  gap: 6px;
+}
+
+.toolbar-menu-group > header {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--vp-c-text-2);
+}
+
+.style-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.style-chip {
+  min-width: 54px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 7px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.style-chip.active,
+.style-chip:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
+.style-color-grid {
+  gap: 6px;
+}
+
+.style-color-item {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 7px;
+  background: var(--vp-c-bg-soft);
+}
+
+.style-color-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--vp-c-text-1);
+}
+
+.style-color-item input[type='color'] {
+  width: 22px;
+  height: 22px;
+  padding: 0;
   border: 0;
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.toolbar-menu-item {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 9px;
+  border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
-  color: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  text-align: center;
-  text-align-last: center;
+  color: var(--vp-c-text-1);
+  font-size: 12px;
+  text-align: left;
   cursor: pointer;
-  appearance: none;
 }
 
-.color-btn {
-  position: relative;
-  overflow: hidden;
+.toolbar-menu-item:hover,
+.toolbar-menu-item.active {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
 }
 
-.color-btn input[type='color'] {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  padding: 0;
-  border: 0;
-  cursor: pointer;
+.toolbar-menu-item-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .table-picker-wrap {
@@ -961,14 +1305,9 @@ watch(
   color: var(--vp-c-text-2);
 }
 
-.table-toolbar {
-  padding-top: 2px;
-  border-top: 1px dashed var(--vp-c-divider);
-}
-
 .editor {
-  height: var(--home-demo-editor-height, 280px);
-  min-height: var(--home-demo-editor-height, 280px);
+  height: var(--home-demo-editor-height, 320px);
+  min-height: var(--home-demo-editor-height, 320px);
   border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
   padding: 12px;
@@ -1001,8 +1340,22 @@ watch(
     justify-content: space-between;
   }
 
+  .toolbar {
+    gap: 5px;
+    padding: 7px;
+  }
+
+  .toolbar-menu-panel {
+    max-width: min(280px, calc(100vw - 52px));
+  }
+
+  .style-menu-panel {
+    min-width: 260px;
+    width: min(280px, calc(100vw - 52px));
+  }
+
   .editor {
-    --home-demo-editor-height: 220px;
+    --home-demo-editor-height: 240px;
   }
 }
 </style>

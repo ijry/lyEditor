@@ -31,6 +31,10 @@ importers:
         version: 2.1.9(jsdom@29.1.1)
 
   docs-site:
+    dependencies:
+      '@lucide/vue':
+        specifier: ^1.17.0
+        version: 1.17.0(vue@3.5.35(typescript@5.9.3))
     devDependencies:
       vitepress:
         specifier: ^1.5.0
@@ -45,6 +49,8 @@ importers:
   packages/plugins/block-tools: {}
 
   packages/plugins/link-image: {}
+
+  packages/plugins/style-tools: {}
 
   packages/plugins/table: {}
 
@@ -477,6 +483,11 @@ packages:
 
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
+
+  '@lucide/vue@1.17.0':
+    resolution: {integrity: sha512-6Q1ZHgr5FbmJzKWe5BxlNdjLj2lbmuH1zwDtVzUJofX0w9UREwKgq4F4jwKqFYyyIS4Rj3FiJvDi2k6djukmmw==}
+    peerDependencies:
+      vue: '>=3.0.1'
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -2081,6 +2092,10 @@ snapshots:
       iconv-lite: 0.7.2
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
+
+  '@lucide/vue@1.17.0(vue@3.5.35(typescript@5.9.3))':
+    dependencies:
+      vue: 3.5.35(typescript@5.9.3)
 
   '@manypkg/find-root@1.1.0':
     dependencies:
