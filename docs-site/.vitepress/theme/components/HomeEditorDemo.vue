@@ -263,6 +263,20 @@ function applyFontSize() {
   runCommand('fontSize', selectedFontSize.value)
 }
 
+function cycleFontFamily() {
+  const currentIndex = fontFamilyOptions.findIndex((item) => item.value === selectedFontFamily.value)
+  const nextIndex = (currentIndex + 1) % fontFamilyOptions.length
+  selectedFontFamily.value = fontFamilyOptions[nextIndex].value
+  applyFontFamily()
+}
+
+function cycleFontSize() {
+  const currentIndex = fontSizeOptions.findIndex((item) => item.value === selectedFontSize.value)
+  const nextIndex = (currentIndex + 1) % fontSizeOptions.length
+  selectedFontSize.value = fontSizeOptions[nextIndex].value
+  applyFontSize()
+}
+
 function applyTextColor() {
   runCommand('foreColor', selectedTextColor.value)
 }
@@ -368,34 +382,50 @@ watch(
           <button type="button" @click="locale = 'zh-CN'">中文</button>
           <button type="button" @click="locale = 'en-US'">EN</button>
         </div>
-        <button type="button" class="action-btn" @click="resetContent">{{ labels[locale].reset }}</button>
+        <button
+          type="button"
+          class="toolbar-btn"
+          :title="labels[locale].reset"
+          :aria-label="labels[locale].reset"
+          @click="resetContent"
+        >
+          ↻
+        </button>
       </div>
     </header>
 
     <div class="toolbar">
-      <label class="toolbar-select">
-        <span>{{ labels[locale].fontFamily }}</span>
-        <select v-model="selectedFontFamily" @change="applyFontFamily">
-          <option v-for="item in fontFamilyOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
-        </select>
-      </label>
-      <label class="toolbar-select">
-        <span>{{ labels[locale].fontSize }}</span>
-        <select v-model="selectedFontSize" @change="applyFontSize">
-          <option v-for="item in fontSizeOptions" :key="item.value" :value="item.value">{{ item.label }}px</option>
-        </select>
-      </label>
-      <label class="toolbar-color">
-        <span>{{ labels[locale].textColor }}</span>
+      <button
+        type="button"
+        class="toolbar-btn"
+        :title="`${labels[locale].fontFamily}: ${selectedFontFamily}`"
+        :aria-label="`${labels[locale].fontFamily}: ${selectedFontFamily}`"
+        @mousedown.prevent
+        @click="cycleFontFamily"
+      >
+        𝑭
+      </button>
+      <button
+        type="button"
+        class="toolbar-btn"
+        :title="`${labels[locale].fontSize}: ${fontSizeOptions.find((item) => item.value === selectedFontSize)?.label ?? '14'}px`"
+        :aria-label="`${labels[locale].fontSize}: ${fontSizeOptions.find((item) => item.value === selectedFontSize)?.label ?? '14'}px`"
+        @mousedown.prevent
+        @click="cycleFontSize"
+      >
+        A↕
+      </button>
+      <label class="toolbar-btn color-btn" :title="labels[locale].textColor" :aria-label="labels[locale].textColor">
+        A
         <input v-model="selectedTextColor" type="color" @input="applyTextColor" />
       </label>
-      <label class="toolbar-color">
-        <span>{{ labels[locale].highlightColor }}</span>
+      <label class="toolbar-btn color-btn" :title="labels[locale].highlightColor" :aria-label="labels[locale].highlightColor">
+        🖍
         <input v-model="selectedHighlightColor" type="color" @input="applyHighlightColor" />
       </label>
-      <button type="button" class="action-btn" @mousedown.prevent @click="runCommand('undo')">{{ labels[locale].undo }}</button>
-      <button type="button" class="action-btn" @mousedown.prevent @click="runCommand('redo')">{{ labels[locale].redo }}</button>
-      <button type="button" class="action-btn" @mousedown.prevent @click="runCommand('removeFormat')">{{ labels[locale].removeFormat }}</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].undo" :aria-label="labels[locale].undo" @mousedown.prevent @click="runCommand('undo')">↺</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].redo" :aria-label="labels[locale].redo" @mousedown.prevent @click="runCommand('redo')">↻</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].removeFormat" :aria-label="labels[locale].removeFormat" @mousedown.prevent @click="runCommand('removeFormat')">T×</button>
     </div>
 
     <div class="toolbar">
@@ -454,12 +484,12 @@ watch(
         {{ tool.symbol }}
       </button>
 
-      <button type="button" class="action-btn" @mousedown.prevent @click="insertInlineCode">{{ labels[locale].inlineCode }}</button>
-      <button type="button" class="action-btn" @mousedown.prevent @click="insertLink">{{ labels[locale].link }}</button>
-      <button type="button" class="action-btn" @mousedown.prevent @click="runCommand('unlink')">{{ labels[locale].unlink }}</button>
-      <button type="button" class="action-btn" @mousedown.prevent @click="insertImage">{{ labels[locale].image }}</button>
-      <button type="button" class="action-btn" @mousedown.prevent @click="insertTable">{{ labels[locale].table }}</button>
-      <button type="button" class="action-btn" @mousedown.prevent @click="runCommand('insertHorizontalRule')">{{ labels[locale].divider }}</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].inlineCode" :aria-label="labels[locale].inlineCode" @mousedown.prevent @click="insertInlineCode">&lt;/&gt;</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].link" :aria-label="labels[locale].link" @mousedown.prevent @click="insertLink">🔗</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].unlink" :aria-label="labels[locale].unlink" @mousedown.prevent @click="runCommand('unlink')">⛓</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].image" :aria-label="labels[locale].image" @mousedown.prevent @click="insertImage">🖼</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].table" :aria-label="labels[locale].table" @mousedown.prevent @click="insertTable">▦</button>
+      <button type="button" class="toolbar-btn" :title="labels[locale].divider" :aria-label="labels[locale].divider" @mousedown.prevent @click="runCommand('insertHorizontalRule')">─</button>
     </div>
 
     <div
@@ -536,55 +566,20 @@ watch(
   padding: 0 8px;
 }
 
-.toolbar-select,
-.toolbar-color {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 34px;
-  padding: 0 8px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: var(--vp-c-bg);
+.color-btn {
+  position: relative;
+  overflow: hidden;
 }
 
-.toolbar-select span,
-.toolbar-color span {
-  font-size: 12px;
-  color: var(--vp-c-text-2);
-}
-
-.toolbar-select select {
-  border: 0;
-  background: transparent;
-  color: var(--vp-c-text-1);
-  font-size: 13px;
-  outline: 0;
-}
-
-.toolbar-color input[type='color'] {
-  width: 22px;
-  height: 22px;
+.color-btn input[type='color'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   padding: 0;
   border: 0;
-  background: transparent;
   cursor: pointer;
-}
-
-.action-btn {
-  min-height: 34px;
-  padding: 0 10px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.action-btn:hover {
-  border-color: var(--vp-c-brand-1);
-  color: var(--vp-c-brand-1);
 }
 
 .editor {
