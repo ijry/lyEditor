@@ -408,15 +408,16 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
     linear-gradient(90deg, #0f172a, #172554);
 }
 
-.hero-inner,
 .container {
   max-width: 1180px;
   margin: 0 auto;
 }
 
 .hero-inner {
+  max-width: 1320px;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(520px, 1.15fr);
   gap: 48px;
   align-items: center;
 }
@@ -453,7 +454,7 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
 
 .hero-lead {
   margin: 0;
-  max-width: 620px;
+  max-width: 720px;
   color: rgba(255, 255, 255, 0.76);
   font-size: 18px;
   line-height: 1.8;
