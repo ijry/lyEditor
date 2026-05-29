@@ -191,6 +191,9 @@ const fontSizeOptions = [
   { value: '6', label: '24' }
 ] as const
 
+const commonTextColors = ['#111827', '#334155', '#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#0891b2', '#2563eb', '#7c3aed'] as const
+const commonHighlightColors = ['#fff59d', '#ffecb3', '#fde68a', '#fecdd3', '#bfdbfe', '#bbf7d0', '#c7d2fe', '#fbcfe8'] as const
+
 const selectedFontFamily = ref<string>('Arial')
 const selectedFontSize = ref<string>('3')
 const selectedTextColor = ref<string>('#111827')
@@ -408,11 +411,30 @@ function applyFontSizeValue(value: string) {
 }
 
 function applyTextColor() {
-  runCommand('foreColor', selectedTextColor.value)
+  runColorCommand('foreColor', selectedTextColor.value)
 }
 
 function applyHighlightColor() {
-  runCommand('hiliteColor', selectedHighlightColor.value)
+  runColorCommand('hiliteColor', selectedHighlightColor.value)
+}
+
+function applyTextColorValue(value: string) {
+  selectedTextColor.value = value
+  applyTextColor()
+}
+
+function applyHighlightColorValue(value: string) {
+  selectedHighlightColor.value = value
+  applyHighlightColor()
+}
+
+function runColorCommand(command: 'foreColor' | 'hiliteColor', value: string) {
+  if (typeof document === 'undefined') return
+  if (!focusEditorWithSelection()) return
+  document.execCommand('styleWithCSS', false, 'true')
+  document.execCommand(command, false, value)
+  onInput()
+  cacheSelection()
 }
 
 function applyBlock(block: string) {
@@ -958,6 +980,21 @@ watch(
               </span>
               <input v-model="selectedTextColor" type="color" @input="applyTextColor" />
             </label>
+            <div class="color-presets">
+              <button
+                v-for="color in commonTextColors"
+                :key="`text-${color}`"
+                type="button"
+                class="color-swatch"
+                :class="{ active: selectedTextColor === color }"
+                :title="color"
+                :aria-label="color"
+                @mousedown.prevent
+                @click="applyTextColorValue(color)"
+              >
+                <span class="color-swatch-dot" :style="{ background: color }"></span>
+              </button>
+            </div>
             <label class="style-color-item">
               <span class="style-color-label">
                 <EditorIcon name="highlight" :size="14" />
@@ -965,6 +1002,21 @@ watch(
               </span>
               <input v-model="selectedHighlightColor" type="color" @input="applyHighlightColor" />
             </label>
+            <div class="color-presets">
+              <button
+                v-for="color in commonHighlightColors"
+                :key="`highlight-${color}`"
+                type="button"
+                class="color-swatch"
+                :class="{ active: selectedHighlightColor === color }"
+                :title="color"
+                :aria-label="color"
+                @mousedown.prevent
+                @click="applyHighlightColorValue(color)"
+              >
+                <span class="color-swatch-dot" :style="{ background: color }"></span>
+              </button>
+            </div>
           </section>
         </div>
       </div>
@@ -1085,7 +1137,6 @@ watch(
       @input="onInput"
       @keyup="cacheSelection"
       @mouseup="cacheSelection"
-      v-html="contentHtml"
     ></div>
   </section>
 </template>
@@ -1218,8 +1269,8 @@ watch(
 }
 
 .color-menu-panel {
-  width: 224px;
-  min-width: 224px;
+  width: 244px;
+  min-width: 244px;
 }
 
 .toolbar-menu-group {
@@ -1260,6 +1311,36 @@ watch(
 
 .style-color-grid {
   gap: 6px;
+}
+
+.color-presets {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 5px;
+}
+
+.color-swatch {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  cursor: pointer;
+}
+
+.color-swatch.active,
+.color-swatch:hover {
+  border-color: var(--vp-c-brand-1);
+}
+
+.color-swatch-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
 }
 
 .style-color-item {
@@ -1420,8 +1501,8 @@ watch(
   }
 
   .color-menu-panel {
-    min-width: 220px;
-    width: min(240px, calc(100vw - 52px));
+    min-width: 236px;
+    width: min(252px, calc(100vw - 52px));
   }
 
   .editor {

@@ -622,6 +622,16 @@ const content = computed(() => (isEn.value ? enContent : zhContent))
   color: #d8f3e4;
 }
 
+.hero-demo-shell :deep(.color-swatch) {
+  border-color: rgba(148, 196, 176, 0.34);
+  background: rgba(7, 35, 26, 0.58);
+}
+
+.hero-demo-shell :deep(.color-swatch.active),
+.hero-demo-shell :deep(.color-swatch:hover) {
+  border-color: #86efac;
+}
+
 .hero-demo-shell :deep(.table-picker-cell) {
   border-color: rgba(148, 196, 176, 0.36);
   background: rgba(9, 45, 33, 0.62);
